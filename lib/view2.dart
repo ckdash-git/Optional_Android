@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:optional/button_navigation_page.dart';
+import 'package:optional/blog_list_screen.dart';
 // import 'package:optional/view4.dart';
 
 class CustomUIScreen extends StatelessWidget {
@@ -26,7 +26,6 @@ class CustomUIScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
               RichText(
                 text: TextSpan(
                   text: 'Based on ',
@@ -142,9 +141,7 @@ class CustomUIScreen extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => ButtonNavigationPage(title: title),
-          ),
+          MaterialPageRoute(builder: (context) => BlogListScreen(title: title)),
         );
       },
       child: Container(
