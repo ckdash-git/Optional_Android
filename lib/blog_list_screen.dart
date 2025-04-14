@@ -14,13 +14,25 @@ class _BlogListScreenState extends State<BlogListScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Map<String, dynamic>> filteredItems = [];
   List<Map<String, dynamic>> items = [];
+  List<Map<String, dynamic>> recentItems = [];
   Set<String> favorites = {};
+  Map<String, int> visitCounts = {};
 
   @override
   void initState() {
     super.initState();
-    // Initialize items based on the category
     items = getItemsForCategory(widget.title);
+    // Initialize visit counts from existing items
+    for (var item in items) {
+      if (item["visits"] != null) {
+        // Extract number from "Nx" format
+        String visitsStr = item["visits"].toString();
+        int count = int.tryParse(visitsStr.replaceAll('x', '')) ?? 0;
+        visitCounts[item["title"]] = count;
+      } else {
+        visitCounts[item["title"]] = 0;
+      }
+    }
     updateFilteredItems();
     _searchController.addListener(_filterItems);
   }
@@ -154,42 +166,56 @@ class _BlogListScreenState extends State<BlogListScreen> {
     super.dispose();
   }
 
-  void updateFilteredItems() {
-    if (_selectedTabIndex == 2) {
-      // Favorites tab
-      filteredItems =
-          items.where((item) => favorites.contains(item["title"])).toList();
-    } else {
-      filteredItems = List.from(items);
-    }
-    _filterItems();
+  void addToRecent(Map<String, dynamic> item) {
+    setState(() {
+      recentItems.removeWhere((element) => element["title"] == item["title"]);
+
+      recentItems.insert(0, Map<String, dynamic>.from(item));
+
+      if (recentItems.length > 10) {
+        recentItems.removeLast();
+      }
+
+      if (_selectedTabIndex == 1) {
+        updateFilteredItems();
+      }
+    });
   }
 
-  void _filterItems() {
-    final query = _searchController.text.toLowerCase();
+  void updateFilteredItems() {
     setState(() {
-      if (_selectedTabIndex == 2) {
+      final query = _searchController.text.toLowerCase();
+
+      // First, get the base list according to the selected tab
+      List<Map<String, dynamic>> baseList;
+      if (_selectedTabIndex == 1) {
+        // Recent tab
+        baseList = List.from(recentItems);
+      } else if (_selectedTabIndex == 2) {
         // Favorites tab
-        filteredItems = items
-            .where(
-              (item) =>
-                  favorites.contains(item["title"]) &&
-                  (query.isEmpty ||
-                      item["title"].toString().toLowerCase().contains(
-                            query,
-                          )),
-            )
-            .toList();
-      } else if (query.isEmpty) {
-        filteredItems = List.from(items);
+        baseList =
+            items.where((item) => favorites.contains(item["title"])).toList();
       } else {
-        filteredItems = items
-            .where(
-              (item) => item["title"].toString().toLowerCase().contains(query),
-            )
+        // A-Z tab
+        baseList = List.from(items);
+        baseList.sort(
+            (a, b) => a["title"].toString().compareTo(b["title"].toString()));
+      }
+
+      // Then apply search filter if there's a query
+      if (query.isEmpty) {
+        filteredItems = baseList;
+      } else {
+        filteredItems = baseList
+            .where((item) =>
+                item["title"].toString().toLowerCase().contains(query))
             .toList();
       }
     });
+  }
+
+  void _filterItems() {
+    updateFilteredItems();
   }
 
   void toggleFavorite(String title) {
@@ -200,6 +226,30 @@ class _BlogListScreenState extends State<BlogListScreen> {
         favorites.add(title);
       }
       updateFilteredItems();
+    });
+  }
+
+  void updateVisitCount(String title) {
+    setState(() {
+      visitCounts[title] = (visitCounts[title] ?? 0) + 1;
+      // Update the visits count in the items list
+      for (var item in items) {
+        if (item["title"] == title) {
+          item["visits"] = "${visitCounts[title]}x";
+        }
+      }
+      // Update the visits count in recent items
+      for (var item in recentItems) {
+        if (item["title"] == title) {
+          item["visits"] = "${visitCounts[title]}x";
+        }
+      }
+      // Update the visits count in filtered items
+      for (var item in filteredItems) {
+        if (item["title"] == title) {
+          item["visits"] = "${visitCounts[title]}x";
+        }
+      }
     });
   }
 
@@ -233,40 +283,20 @@ class _BlogListScreenState extends State<BlogListScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
-                // Tab buttons
                 Container(
-                  margin: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[900] : Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark
-                            ? Colors.black.withOpacity(0.2)
-                            : Colors.grey.withOpacity(0.2),
-                        blurRadius: 10,
-                        spreadRadius: 1,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                    border: Border.all(
-                      color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-                      width: 1,
-                    ),
+                    color: isDark ? Colors.grey[900] : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Row(
-                      children: [
-                        _buildTabButton("A-Z", 0, Icons.sort_by_alpha),
-                        _buildTabButton("Recents", 1, Icons.history),
-                        _buildTabButton("Favorites", 2, Icons.favorite),
-                      ],
-                    ),
+                  child: Row(
+                    children: [
+                      _buildTabButton("A-Z", 0),
+                      _buildTabButton("Recents", 1),
+                      _buildTabButton("Favorites", 2),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Search bar
                 TextField(
                   controller: _searchController,
                   style: TextStyle(color: isDark ? Colors.white : Colors.black),
@@ -294,14 +324,15 @@ class _BlogListScreenState extends State<BlogListScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          // List of items
           Expanded(
             child: filteredItems.isEmpty
                 ? Center(
                     child: Text(
-                      _selectedTabIndex == 2
-                          ? 'No favorites yet'
-                          : 'No results found',
+                      _selectedTabIndex == 1
+                          ? 'No recent visits'
+                          : _selectedTabIndex == 2
+                              ? 'No favorites yet'
+                              : 'No results found',
                       style: TextStyle(
                         color: isDark ? Colors.white70 : Colors.black54,
                         fontSize: 16,
@@ -327,6 +358,8 @@ class _BlogListScreenState extends State<BlogListScreen> {
                         ),
                         child: ListTile(
                           onTap: () {
+                            addToRecent(item);
+                            updateVisitCount(item["title"]);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -347,14 +380,13 @@ class _BlogListScreenState extends State<BlogListScreen> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (item["visits"] != null)
-                                Text(
-                                  item["visits"],
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
+                              Text(
+                                "${visitCounts[item["title"]] ?? 0}x",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
                                 ),
+                              ),
                               const SizedBox(width: 8),
                               IconButton(
                                 icon: Icon(
@@ -381,7 +413,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
     );
   }
 
-  Widget _buildTabButton(String text, int index, IconData icon) {
+  Widget _buildTabButton(String text, int index) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = _selectedTabIndex == index;
 
@@ -393,66 +425,27 @@ class _BlogListScreenState extends State<BlogListScreen> {
             updateFilteredItems();
           });
         },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: isSelected
                 ? isDark
-                    ? Colors.blue.withOpacity(0.2)
-                    : Colors.blue.withOpacity(0.15)
+                    ? Colors.grey[800]
+                    : Colors.white
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? Border.all(
-                    color: isDark ? Colors.blue.withOpacity(0.5) : Colors.blue,
-                    width: 1.5,
-                  )
-                : null,
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: isDark
-                          ? Colors.blue.withOpacity(0.1)
-                          : Colors.blue.withOpacity(0.1),
-                      blurRadius: 4,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]
-                : null,
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: isSelected
-                    ? isDark
-                        ? Colors.blue
-                        : Colors.blue[700]
-                    : isDark
-                        ? Colors.grey[400]
-                        : Colors.grey[700],
-              ),
-              const SizedBox(width: 6),
-              Text(
-                text,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isSelected
-                      ? isDark
-                          ? Colors.blue
-                          : Colors.blue[700]
-                      : isDark
-                          ? Colors.grey[400]
-                          : Colors.grey[700],
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 13,
-                ),
-              ),
-            ],
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isSelected
+                  ? isDark
+                      ? Colors.white
+                      : Colors.black
+                  : Colors.grey,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
         ),
       ),
