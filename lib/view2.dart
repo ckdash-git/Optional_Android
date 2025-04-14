@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:optional/blog_list_screen.dart';
+// import 'package:optional/view4.dart';
 
 class CustomUIScreen extends StatelessWidget {
   const CustomUIScreen({super.key});
@@ -7,33 +9,31 @@ class CustomUIScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // ignore: unused_local_variable
     final screenWidth = MediaQuery.of(context).size.width;
+    // ignore: unused_local_variable
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Unbox',
-                style: TextStyle(
-                  fontSize: 32,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
               RichText(
-                text: const TextSpan(
+                text: TextSpan(
                   text: 'Based on ',
-                  style: TextStyle(
-                    fontSize: 28,
-                    color: Colors.black,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w400,
                   ),
                   children: [
-                    TextSpan(
+                    const TextSpan(
                       text: 'Your\n',
                       style: TextStyle(
                         color: Color.fromRGBO(58, 89, 209, 1),
@@ -42,10 +42,8 @@ class CustomUIScreen extends StatelessWidget {
                     ),
                     TextSpan(
                       text: 'needs',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -76,18 +74,18 @@ class CustomUIScreen extends StatelessWidget {
                     ),
                     _buildFeatureCard(
                       context,
-                      title: 'Classes',
-                      subtitle: 'Watch Classes from Popular Creators.',
+                      title: 'Projects',
+                      subtitle: 'Hands-on coding challenges.',
                       gradient: const LinearGradient(
-                        colors: [Colors.orangeAccent, Colors.deepOrangeAccent],
+                        colors: [Colors.greenAccent, Colors.teal],
                       ),
                     ),
                     _buildFeatureCard(
                       context,
-                      title: 'Classes',
-                      subtitle: 'Watch Classes from Popular Creators.',
+                      title: 'Community',
+                      subtitle: 'Connect with others.',
                       gradient: const LinearGradient(
-                        colors: [Colors.orangeAccent, Colors.deepOrangeAccent],
+                        colors: [Colors.blueAccent, Colors.indigo],
                       ),
                     ),
                   ],
@@ -99,12 +97,12 @@ class CustomUIScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Unwrap!\nThe Optional?',
-                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 8),
                     Text.rich(
@@ -113,14 +111,16 @@ class CustomUIScreen extends StatelessWidget {
                         style: TextStyle(color: Colors.grey),
                         children: [
                           WidgetSpan(
-                            child: Icon(Icons.favorite, size: 16, color: Colors.red),
+                            child: Icon(
+                              Icons.favorite,
+                              size: 16,
+                              color: Colors.red,
+                            ),
                           ),
-                          TextSpan(
-                            text: ' in Bengaluru, India',
-                          ),
+                          TextSpan(text: ' in Bengaluru, India'),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -139,7 +139,10 @@ class CustomUIScreen extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: () {
-        // You can add specific navigation here later if needed
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => BlogListScreen(title: title)),
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -167,11 +170,8 @@ class CustomUIScreen extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               subtitle,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
-            )
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+            ),
           ],
         ),
       ),
