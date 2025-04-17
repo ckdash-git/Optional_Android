@@ -67,6 +67,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       await controller.goBack();
       await updateNavigationState();
     } else {
+      // ignore: use_build_context_synchronously
       Navigator.of(context).pop();
     }
   }
@@ -157,88 +158,63 @@ class _WebViewScreenState extends State<WebViewScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // ignore: deprecated_member_use
     return WillPopScope(
       onWillPop: () async {
-        if (await controller.canGoBack()) {
-          await controller.goBack();
-          await updateNavigationState();
-          return false;
-        }
-        return true;
+        // Always return false to disable the back button functionality
+        return false;
       },
       child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: isDark ? Colors.grey[900] : Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios,
-              color: isDark ? Colors.white : Colors.blue,
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            widget.title,
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'OpenSauce',
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                Icons.refresh,
-                color: isDark ? Colors.white : Colors.blue,
-              ),
-              onPressed: () => controller.reload(),
-            ),
-          ],
-        ),
         body: Stack(
           children: [
-            WebViewWidget(controller: controller),
+            Padding(
+              padding:
+                  const EdgeInsets.only(top: 40), // Add margin from the top
+              child: WebViewWidget(controller: controller),
+            ),
             if (isLoading) const Center(child: CircularProgressIndicator()),
           ],
         ),
         bottomNavigationBar: showNavigationBar
-            ? Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[900] : Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 6,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _navIcon(
-                        icon: Icons.arrow_back_ios_new,
-                        onPressed: canGoBack ? _onBackPressed : null,
-                        tooltip: 'Back',
-                        color: Colors.blue,
-                      ),
-                      _navIcon(
-                        icon: Icons.arrow_forward_ios,
-                        onPressed: canGoForward ? _onForwardPressed : null,
-                        tooltip: 'Forward',
-                        color: Colors.blue,
-                      ),
-                      _navIcon(
-                        icon: Icons.close,
-                        onPressed: _onExitPressed,
-                        tooltip: 'Exit',
-                        color: Colors.red,
+            ? SafeArea(
+                child: Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[900] : Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, -2),
                       ),
                     ],
+                  ),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _navIcon(
+                          icon: Icons.arrow_back_ios_new,
+                          onPressed: canGoBack ? _onBackPressed : null,
+                          tooltip: 'Back',
+                          color: Colors.blue,
+                        ),
+                        _navIcon(
+                          icon: Icons.arrow_forward_ios,
+                          onPressed: canGoForward ? _onForwardPressed : null,
+                          tooltip: 'Forward',
+                          color: Colors.blue,
+                        ),
+                        _navIcon(
+                          icon: Icons.close,
+                          onPressed: _onExitPressed,
+                          tooltip: 'Exit',
+                          color: Colors.red,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )

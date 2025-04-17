@@ -4,6 +4,7 @@ import 'package:optional/user_profile.dart';
 import 'package:provider/provider.dart';
 import 'package:optional/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -23,21 +24,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with current values
-    final userProfile =
-        Provider.of<UserProfileProvider>(context, listen: false).profile;
-    _nameController = TextEditingController(text: userProfile.name);
-    _emailController = TextEditingController(text: userProfile.email);
+
+    // Initialize controllers with default empty values
+    _nameController = TextEditingController(text: '');
+    _emailController = TextEditingController(text: '');
+
+    // Fetch user profile asynchronously
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    try {
+      // Get the currently logged-in user
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        final email = user.email;
+
+        // Fetch user data from Firestore (or Realtime Database)
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users') // Replace 'users' with your collection name
+            .doc(email) // Assuming email is used as the document ID
+            .get();
+
+        if (userDoc.exists) {
+          final userData = userDoc.data();
+          setState(() {
+            _nameController.text = userData?['name'] ?? '';
+            _emailController.text = email ?? '';
+          });
+        } else {
+          // Handle case where user data is not found
+          print('User data not found for email: $email');
+        }
+      }
+    } catch (e) {
+      print('Error fetching user profile: $e');
+    }
   }
 
   @override
   void dispose() {
+    // Dispose controllers to avoid memory leaks
     _nameController.dispose();
     _emailController.dispose();
     super.dispose();
   }
 
   void _editProfileDialog() {
+    // Ensure the controllers are updated with the latest profile data
+    _nameController.text = _nameController.text.isNotEmpty
+        ? _nameController.text
+        : "Enter your name"; // Default placeholder if empty
+    _emailController.text = _emailController.text.isNotEmpty
+        ? _emailController.text
+        : "Enter your email"; // Default placeholder if empty
+
     showDialog(
       context: context,
       builder: (context) {
@@ -47,13 +89,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
+                controller: _nameController, // Display current name
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  hintText: 'Enter your name', // Placeholder text
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                controller: _emailController, // Display current email
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  hintText: 'Enter your email', // Placeholder text
+                ),
               ),
             ],
           ),
@@ -64,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             TextButton(
               onPressed: () {
-                // Update the profile using the provider
+                // Save the updated profile data
                 Provider.of<UserProfileProvider>(
                   context,
                   listen: false,

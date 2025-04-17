@@ -8,7 +8,6 @@ import 'user_profile.dart';
 import 'package:flutter/gestures.dart';
 import 'package:optional/sign_up_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'home_page.dart';
 
 class LoginSignupScreen extends StatefulWidget {
   const LoginSignupScreen({super.key});
