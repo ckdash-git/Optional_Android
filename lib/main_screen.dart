@@ -1,8 +1,7 @@
-// it will manage bottom navigation
-
 import 'package:flutter/material.dart';
-import 'package:optional/view2.dart';
-import 'package:optional/view4.dart';
+import 'package:optional/view2.dart'; // Home
+import 'package:optional/view4.dart'; // Profile
+import 'package:optional/search_screen.dart'; // Your custom search
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -12,12 +11,12 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0; // Changed from 2 to 0 to show home screen by default
+  int _selectedIndex = 0;
 
   final List<Widget> _screens = const [
-    CustomUIScreen(), // Home
-    Placeholder(), // Search screen
-    ProfileScreen(), // Profile
+    CustomUIScreen(),    // Home
+    SearchScreen(),      // Search tab
+    ProfileScreen(),     // Profile
   ];
 
   void _onItemTapped(int index) {

@@ -20,25 +20,33 @@ class _WebViewScreenState extends State<WebViewScreen> {
   bool isLoading = true;
   bool canGoBack = false;
   bool canGoForward = false;
+  bool showNavigationBar = false;
 
   @override
   void initState() {
     super.initState();
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setUserAgent(
+        'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.144 Mobile Safari/537.36',
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
             setState(() {
               isLoading = true;
+              showNavigationBar = false;
             });
-            updateNavigationState();
           },
-          onPageFinished: (String url) {
+          onPageFinished: (String url) async {
             setState(() {
               isLoading = false;
+              showNavigationBar = true;
             });
-            updateNavigationState();
+            await updateNavigationState();
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            return NavigationDecision.navigate;
           },
         ),
       )
@@ -46,15 +54,103 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   Future<void> updateNavigationState() async {
-    final canNavigateBack = await controller.canGoBack();
-    final canNavigateForward = await controller.canGoForward();
+    final back = await controller.canGoBack();
+    final forward = await controller.canGoForward();
+    setState(() {
+      canGoBack = back;
+      canGoForward = forward;
+    });
+  }
 
-    if (mounted) {
-      setState(() {
-        canGoBack = canNavigateBack;
-        canGoForward = canNavigateForward;
-      });
+  Future<void> _onBackPressed() async {
+    if (await controller.canGoBack()) {
+      await controller.goBack();
+      await updateNavigationState();
+    } else {
+      Navigator.of(context).pop();
     }
+  }
+
+  Future<void> _onForwardPressed() async {
+    if (await controller.canGoForward()) {
+      await controller.goForward();
+      await updateNavigationState();
+    }
+  }
+
+  void _onExitPressed() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+          title: Text(
+            'Exit Web View',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'OpenSauce',
+              color: isDark ? Colors.white : Colors.black,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to exit?',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              fontFamily: 'OpenSauce',
+              color: isDark ? Colors.grey[300] : Colors.black87,
+            ),
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 17,
+                        fontFamily: 'OpenSauce',
+                      ),
+                    ),
+                  ),
+                ),
+                Container(width: 0.5, height: 44, color: Colors.grey),
+                Expanded(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // close dialog
+                      Navigator.of(context).pop(); // close screen
+                    },
+                    child: Text(
+                      'Exit',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'OpenSauce',
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          actionsPadding: EdgeInsets.zero,
+          contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+          titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+        );
+      },
+    );
   }
 
   @override
@@ -64,7 +160,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
     return WillPopScope(
       onWillPop: () async {
         if (await controller.canGoBack()) {
-          controller.goBack();
+          await controller.goBack();
+          await updateNavigationState();
           return false;
         }
         return true;
@@ -85,6 +182,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black,
               fontWeight: FontWeight.bold,
+              fontFamily: 'OpenSauce',
             ),
           ),
           actions: [
@@ -93,226 +191,74 @@ class _WebViewScreenState extends State<WebViewScreen> {
                 Icons.refresh,
                 color: isDark ? Colors.white : Colors.blue,
               ),
-              onPressed: () {
-                controller.reload();
-              },
+              onPressed: () => controller.reload(),
             ),
           ],
         ),
         body: Stack(
           children: [
             WebViewWidget(controller: controller),
-            if (isLoading)
-              const Center(
-                child: CircularProgressIndicator(),
-              ),
+            if (isLoading) const Center(child: CircularProgressIndicator()),
           ],
         ),
-        bottomNavigationBar: Container(
-          height: 65,
-          decoration: BoxDecoration(
-            color: isDark ? Colors.grey[900] : Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavigationButton(
-                    icon: Icons.arrow_back_ios_new,
-                    onPressed: canGoBack
-                        ? () {
-                            controller.goBack();
-                            updateNavigationState();
-                          }
-                        : null,
-                    isDark: isDark,
-                    tooltip: 'Back',
+        bottomNavigationBar: showNavigationBar
+            ? Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[900] : Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 6,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _navIcon(
+                        icon: Icons.arrow_back_ios_new,
+                        onPressed: canGoBack ? _onBackPressed : null,
+                        tooltip: 'Back',
+                        color: Colors.blue,
+                      ),
+                      _navIcon(
+                        icon: Icons.arrow_forward_ios,
+                        onPressed: canGoForward ? _onForwardPressed : null,
+                        tooltip: 'Forward',
+                        color: Colors.blue,
+                      ),
+                      _navIcon(
+                        icon: Icons.close,
+                        onPressed: _onExitPressed,
+                        tooltip: 'Exit',
+                        color: Colors.red,
+                      ),
+                    ],
                   ),
-                  _buildNavigationButton(
-                    icon: Icons.arrow_forward_ios,
-                    onPressed: canGoForward
-                        ? () {
-                            controller.goForward();
-                            updateNavigationState();
-                          }
-                        : null,
-                    isDark: isDark,
-                    tooltip: 'Forward',
-                  ),
-                  _buildNavigationButton(
-                    icon: Icons.close,
-                    onPressed: () => _showExitDialog(context, isDark),
-                    isDark: isDark,
-                    tooltip: 'Close',
-                    isExit: true,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+                ),
+              )
+            : null,
       ),
     );
   }
 
-  Future<void> _showExitDialog(BuildContext context, bool isDark) async {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.exit_to_app_rounded,
-                  size: 40,
-                  color: Colors.red,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Exit Page',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Are you sure you want to exit?',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            isDark ? Colors.grey[800] : Colors.grey[200],
-                        foregroundColor: isDark ? Colors.white : Colors.black,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        minimumSize: const Size(100, 45),
-                      ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Close dialog
-                        Navigator.of(context).pop(); // Exit WebView
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        minimumSize: const Size(100, 45),
-                      ),
-                      child: const Text(
-                        'Exit',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildNavigationButton({
+  Widget _navIcon({
     required IconData icon,
     required VoidCallback? onPressed,
-    required bool isDark,
     required String tooltip,
-    bool isExit = false,
+    required Color color,
   }) {
-    final isEnabled = onPressed != null;
-
     return Tooltip(
       message: tooltip,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: isEnabled
-                  ? isExit
-                      ? (isDark
-                          ? Colors.red.withOpacity(0.2)
-                          : Colors.red.withOpacity(0.1))
-                      : (isDark
-                          ? Colors.blue.withOpacity(0.2)
-                          : Colors.blue.withOpacity(0.1))
-                  : Colors.transparent,
-              border: Border.all(
-                color: isEnabled
-                    ? isExit
-                        ? (isDark
-                            ? Colors.red.withOpacity(0.3)
-                            : Colors.red.withOpacity(0.2))
-                        : (isDark
-                            ? Colors.blue.withOpacity(0.3)
-                            : Colors.blue.withOpacity(0.2))
-                    : Colors.transparent,
-                width: 1.5,
-              ),
-            ),
-            child: Icon(
-              icon,
-              color: isEnabled
-                  ? isExit
-                      ? Colors.red[400]
-                      : (isDark ? Colors.blue : Colors.blue[700])
-                  : isDark
-                      ? Colors.grey[600]
-                      : Colors.grey[400],
-              size: 20,
-            ),
-          ),
-        ),
+      child: IconButton(
+        icon: Icon(icon, size: 20),
+        onPressed: onPressed,
+        color: onPressed != null ? color : Colors.grey,
       ),
     );
   }

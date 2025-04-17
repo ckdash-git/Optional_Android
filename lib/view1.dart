@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'main_screen.dart'; // Update this import
+import 'main_screen.dart';
 import 'package:provider/provider.dart';
 import 'user_profile.dart';
+import 'package:flutter/gestures.dart';
+import 'package:optional/sign_up_screen.dart'; // ✅ Your actual signup screen
 
 class LoginSignupScreen extends StatefulWidget {
   const LoginSignupScreen({super.key});
@@ -14,10 +16,10 @@ class LoginSignupScreen extends StatefulWidget {
 class _LoginSignupScreenState extends State<LoginSignupScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<ShakeWidgetState> _shakeKey = GlobalKey<ShakeWidgetState>();
 
   bool isValidGmail(String email) {
-    // Basic validation for name@gmail.com format
     final gmailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$');
     return gmailRegex.hasMatch(email);
   }
@@ -28,13 +30,11 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
     if (email.isEmpty || !isValidGmail(email)) {
       _shakeKey.currentState?.shake();
     } else {
-      // Update the user profile with the entered email
       Provider.of<UserProfileProvider>(
         context,
         listen: false,
       ).updateProfile(email: email);
 
-      // Navigate to MainScreen instead of CustomUIScreen
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -42,36 +42,35 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
     }
   }
 
+  void _navigateToSignup() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SignUpScreen()), // ✅ Replaces the placeholder
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-
-    // Get the system theme brightness (dark/light)
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor:
-          isDarkMode ? Colors.black : Colors.white, // Dynamic background
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: width * 0.08),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Logo
                 Text.rich(
                   TextSpan(
                     text: 'Optional',
                     style: TextStyle(
                       fontSize: width * 0.17,
                       fontWeight: FontWeight.bold,
-                      color:
-                          isDarkMode
-                              ? Colors.white
-                              : Colors.black, // Dynamic text color
+                      color: isDarkMode ? Colors.white : Colors.black,
                     ),
                     children: [
                       TextSpan(
@@ -90,52 +89,69 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                   style: TextStyle(
                     fontSize: width * 0.05,
                     fontWeight: FontWeight.w600,
-                    color:
-                        isDarkMode
-                            ? Colors.white
-                            : Colors.black, // Dynamic text color
+                    color: isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
 
                 const SizedBox(height: 24),
 
-                // Email TextField with Shake animation
                 ShakeWidget(
                   key: _shakeKey,
                   child: Container(
                     decoration: BoxDecoration(
-                      color:
-                          isDarkMode
-                              ? Colors.grey.shade800
-                              : Colors
-                                  .grey
-                                  .shade100, // Dynamic background color
+                      color: isDarkMode
+                          ? Colors.grey.shade800
+                          : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: TextField(
                       controller: _emailController,
                       style: TextStyle(
-                        color:
-                            isDarkMode
-                                ? Colors.white
-                                : Colors.black, // Keeps input text black
+                        color: isDarkMode ? Colors.white : Colors.black,
                         fontWeight: FontWeight.normal,
                       ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: 'Email',
                         hintStyle: TextStyle(
-                          color:
-                              isDarkMode
-                                  ? Colors.white70
-                                  : Colors
-                                      .grey
-                                      .shade600, // Hint text color based on theme
+                          color: isDarkMode
+                              ? Colors.white70
+                              : Colors.grey.shade600,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       keyboardType: TextInputType.emailAddress,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDarkMode
+                        ? Colors.grey.shade800
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                      fontWeight: FontWeight.normal,
+                    ),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Password',
+                      hintStyle: TextStyle(
+                        color: isDarkMode
+                            ? Colors.white70
+                            : Colors.grey.shade600,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -148,9 +164,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                     onPressed: _validateEmail,
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
-                          isDarkMode
-                              ? Colors.blueAccent
-                              : Colors.black, // Button color based on theme
+                          isDarkMode ? Colors.blueAccent : Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -159,11 +173,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                     child: Text(
                       'Continue',
                       style: TextStyle(
-                        color:
-                            isDarkMode
-                                ? Colors.black
-                                : Colors
-                                    .white, // Button text color based on theme
+                        color: isDarkMode ? Colors.black : Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -176,9 +186,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                   'Or',
                   style: TextStyle(
                     color:
-                        isDarkMode
-                            ? Colors.white70
-                            : Colors.grey.shade600, // Text color based on theme
+                        isDarkMode ? Colors.white70 : Colors.grey.shade600,
                   ),
                 ),
 
@@ -194,6 +202,28 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                 ),
 
                 const SizedBox(height: 24),
+
+                RichText(
+                  text: TextSpan(
+                    text: "Don't have an account? ",
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: 'Sign Up',
+                        style: const TextStyle(
+                          color: Colors.blueAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        recognizer: TapGestureRecognizer()..onTap = _navigateToSignup,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
               ],
             ),
           ),
@@ -203,6 +233,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
   }
 }
 
+// Social button for icons
 class SocialButton extends StatelessWidget {
   final IconData icon;
 
@@ -225,11 +256,12 @@ class SocialButton extends StatelessWidget {
         icon,
         size: 30,
         color: isDarkMode ? Colors.white : Colors.black,
-      ), // Icon color based on theme
+      ),
     );
   }
 }
 
+// Widget to shake email box on invalid input
 class ShakeWidget extends StatefulWidget {
   final Widget child;
   final Duration duration;
@@ -255,12 +287,10 @@ class ShakeWidgetState extends State<ShakeWidget>
   @override
   void initState() {
     _controller = AnimationController(duration: widget.duration, vsync: this);
-
     _animation = Tween<double>(
       begin: 0,
       end: 24,
     ).chain(CurveTween(curve: Curves.elasticIn)).animate(_controller);
-
     super.initState();
   }
 

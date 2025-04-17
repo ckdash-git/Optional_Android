@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:optional/blog_list_screen.dart';
-// import 'package:optional/view4.dart';
 
 class CustomUIScreen extends StatelessWidget {
   const CustomUIScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // ignore: unused_local_variable
     final screenWidth = MediaQuery.of(context).size.width;
-    // ignore: unused_local_variable
+    final screenHeight = MediaQuery.of(context).size.height;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -23,15 +21,15 @@ class CustomUIScreen extends StatelessWidget {
               Text(
                 'Unbox',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               RichText(
                 text: TextSpan(
                   text: 'Based on ',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w400,
-                  ),
+                        fontWeight: FontWeight.w400,
+                      ),
                   children: [
                     const TextSpan(
                       text: 'Your\n',
@@ -42,15 +40,23 @@ class CustomUIScreen extends StatelessWidget {
                     ),
                     TextSpan(
                       text: 'needs',
-                      style: Theme.of(context).textTheme.headlineSmall
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-              Expanded(
+
+              // Instead of Expanded, use a fixed-height container inside scroll view
+              SizedBox(
+                height:
+                    screenHeight * 0.7, // Adjust as per screen or content needs
                 child: GridView.count(
+                  physics:
+                      const NeverScrollableScrollPhysics(), // Disable nested scrolling
                   crossAxisCount: 2,
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
@@ -59,6 +65,14 @@ class CustomUIScreen extends StatelessWidget {
                     _buildFeatureCard(
                       context,
                       title: 'Compiler',
+                      subtitle: 'Run and test code within the App.',
+                      gradient: const LinearGradient(
+                        colors: [Colors.purpleAccent, Colors.pinkAccent],
+                      ),
+                    ),
+                    _buildFeatureCard(
+                      context,
+                      title: 'Compiler2',
                       subtitle: 'Run and test code within the App.',
                       gradient: const LinearGradient(
                         colors: [Colors.purpleAccent, Colors.pinkAccent],
@@ -91,11 +105,13 @@ class CustomUIScreen extends StatelessWidget {
                   ],
                 ),
               ),
+
               const SizedBox(height: 20),
-              const Center(
+
+              Center(
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       'Unwrap!\nThe Optional?',
                       style: TextStyle(
                         fontSize: 28,
@@ -104,11 +120,11 @@ class CustomUIScreen extends StatelessWidget {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text.rich(
                       TextSpan(
                         text: 'Crafted with ',
-                        style: TextStyle(color: Colors.grey),
+                        style: const TextStyle(color: Colors.grey),
                         children: [
                           WidgetSpan(
                             child: Icon(
@@ -117,7 +133,7 @@ class CustomUIScreen extends StatelessWidget {
                               color: Colors.red,
                             ),
                           ),
-                          TextSpan(text: ' in Bengaluru, India'),
+                          const TextSpan(text: ' in Bengaluru, India'),
                         ],
                       ),
                     ),
@@ -141,7 +157,9 @@ class CustomUIScreen extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => BlogListScreen(title: title)),
+          MaterialPageRoute(
+            builder: (context) => BlogListScreen(title: title),
+          ),
         );
       },
       child: Container(
@@ -154,14 +172,16 @@ class CustomUIScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const Icon(Icons.open_in_new, color: Colors.black),
