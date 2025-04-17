@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:optional/blog_list_screen.dart';
 
-class CustomUIScreen extends StatelessWidget {
-  const CustomUIScreen({super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {

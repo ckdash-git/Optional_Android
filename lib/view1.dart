@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'main_screen.dart';
 import 'package:provider/provider.dart';
 import 'user_profile.dart';
 import 'package:flutter/gestures.dart';
-import 'package:optional/sign_up_screen.dart'; // ✅ Your actual signup screen
+import 'package:optional/sign_up_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'home_page.dart';
 
 class LoginSignupScreen extends StatefulWidget {
   const LoginSignupScreen({super.key});
@@ -24,20 +25,53 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
     return gmailRegex.hasMatch(email);
   }
 
-  void _validateEmail() {
+  void _validateEmail() async {
     final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-    if (email.isEmpty || !isValidGmail(email)) {
+    if (email.isEmpty || !isValidGmail(email) || password.isEmpty) {
       _shakeKey.currentState?.shake();
-    } else {
-      Provider.of<UserProfileProvider>(
-        context,
-        listen: false,
-      ).updateProfile(email: email);
+      return;
+    }
 
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Save to provider
+      Provider.of<UserProfileProvider>(context, listen: false)
+          .updateProfile(email: email);
+
+      // Navigate to MainScreen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MainScreen()),
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+      if (e.code == 'user-not-found') {
+        errorMessage = 'No user found for that email.';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Wrong password provided.';
+      } else {
+        errorMessage = 'Authentication failed.';
+      }
+
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Login Failed'),
+          content: Text(errorMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
     }
   }
@@ -45,7 +79,9 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
   void _navigateToSignup() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const SignUpScreen()), // ✅ Replaces the placeholder
+      MaterialPageRoute(
+          builder: (context) =>
+              const SignUpScreen()), // ✅ Replaces the placeholder
     );
   }
 
@@ -81,9 +117,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                   ),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 40),
-
                 Text(
                   'Login or Signup',
                   style: TextStyle(
@@ -92,9 +126,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 ShakeWidget(
                   key: _shakeKey,
                   child: Container(
@@ -125,9 +157,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
                 Container(
                   decoration: BoxDecoration(
                     color: isDarkMode
@@ -147,17 +177,14 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                       border: InputBorder.none,
                       hintText: 'Password',
                       hintStyle: TextStyle(
-                        color: isDarkMode
-                            ? Colors.white70
-                            : Colors.grey.shade600,
+                        color:
+                            isDarkMode ? Colors.white70 : Colors.grey.shade600,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -179,19 +206,14 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 Text(
                   'Or',
                   style: TextStyle(
-                    color:
-                        isDarkMode ? Colors.white70 : Colors.grey.shade600,
+                    color: isDarkMode ? Colors.white70 : Colors.grey.shade600,
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: const [
@@ -200,9 +222,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                     SocialButton(icon: Icons.person),
                   ],
                 ),
-
                 const SizedBox(height: 24),
-
                 RichText(
                   text: TextSpan(
                     text: "Don't have an account? ",
@@ -217,12 +237,12 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                           color: Colors.blueAccent,
                           fontWeight: FontWeight.bold,
                         ),
-                        recognizer: TapGestureRecognizer()..onTap = _navigateToSignup,
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = _navigateToSignup,
                       ),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
               ],
             ),
