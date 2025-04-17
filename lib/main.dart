@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:optional/theme_controller.dart';
-import 'package:optional/view1.dart';
+import 'package:optional/login_page.dart';
 import 'package:optional/user_profile.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';

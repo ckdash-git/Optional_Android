@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:optional/main_screen.dart';
 import 'dart:math';
 import 'package:provider/provider.dart';
 import 'user_profile.dart';
@@ -35,21 +38,85 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
     }
 
     try {
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
 
-      // Save to provider
-      Provider.of<UserProfileProvider>(context, listen: false)
-          .updateProfile(email: email);
+      User? user = FirebaseAuth.instance.currentUser;
 
-      // Navigate to MainScreen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
+      // Force refresh the user to get the latest emailVerified value
+      await user?.reload();
+      user = FirebaseAuth.instance.currentUser;
+
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+
+        // Block access and show verification dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => StatefulBuilder(
+            builder: (context, setState) {
+              late Timer timer;
+
+              timer = Timer.periodic(const Duration(seconds: 3), (t) async {
+                await user!.reload();
+                if (FirebaseAuth.instance.currentUser!.emailVerified) {
+                  t.cancel();
+                  Navigator.of(context).pop(); // Close dialog
+
+                  Provider.of<UserProfileProvider>(context, listen: false)
+                      .updateProfile(email: email);
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MainScreen()),
+                  );
+                }
+              });
+
+              return AlertDialog(
+                title: const Text("Verify your email"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    const Text(
+                        "A verification link has been sent to your Gmail."),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () async {
+                        await user!.sendEmailVerification();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Verification email resent.')),
+                        );
+                      },
+                      child: const Text("Resend Email"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        timer.cancel();
+                        Navigator.pop(context); // Close dialog
+                      },
+                      child: const Text("Cancel"),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      } else {
+        // If already verified
+        Provider.of<UserProfileProvider>(context, listen: false)
+            .updateProfile(email: email);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       if (e.code == 'user-not-found') {

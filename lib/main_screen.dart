@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:optional/home_page.dart'; // Home
-import 'package:optional/view4.dart'; // Profile
+import 'package:optional/profile_page.dart'; // Profile
 import 'package:optional/search_screen.dart'; // Your custom search
 
 class MainScreen extends StatefulWidget {

@@ -1,10 +1,9 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
-import 'package:optional/theme_controller.dart'; // Import your ThemeController
+import 'package:optional/theme_controller.dart';
 import 'package:optional/user_profile.dart';
 import 'package:provider/provider.dart';
-import 'package:optional/view1.dart'; // Import for navigation to login page
+import 'package:optional/login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -89,8 +88,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode =
         ThemeController.themeModeNotifier.value == ThemeMode.dark ||
-        (ThemeController.themeModeNotifier.value == ThemeMode.system &&
-            brightness == Brightness.dark);
+            (ThemeController.themeModeNotifier.value == ThemeMode.system &&
+                brightness == Brightness.dark);
 
     // Show iOS-style confirmation dialog
     showDialog(
@@ -141,16 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Logout button (top)
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-
-                // Navigate to login page and remove all previous routes
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const LoginSignupScreen(),
-                  ),
-                  (route) => false, // This removes all previous routes
-                );
+                logoutUser(context);
               },
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -176,6 +166,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> logoutUser(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      // Navigate to login screen
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginSignupScreen()),
+        (route) => false,
+      );
+    } catch (e) {
+      print('Logout error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Use ValueListenableBuilder to listen to theme changes
@@ -183,27 +188,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       valueListenable: ThemeController.themeModeNotifier,
       builder: (context, themeMode, _) {
         final brightness = MediaQuery.of(context).platformBrightness;
-        final isDarkMode =
-            themeMode == ThemeMode.dark ||
+        final isDarkMode = themeMode == ThemeMode.dark ||
             (themeMode == ThemeMode.system && brightness == Brightness.dark);
 
         return Scaffold(
           body: SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: 32), // Increased margin from the top
                 SizedBox(
-                  height: 120,
+                  height: 120, // Decreased the height of the profile box
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Container(
                         decoration: BoxDecoration(
-                          color:
-                              isDarkMode
-                                  ? Colors.grey.shade900
-                                  : Colors.grey.shade100,
+                          color: isDarkMode
+                              ? Colors.grey.shade900
+                              : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
@@ -240,27 +243,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     children: [
                                       Text(
                                         profile.name,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.titleLarge?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color:
-                                              isDarkMode
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                              color: isDarkMode
                                                   ? Colors.white
                                                   : Colors.black,
-                                        ),
+                                            ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
                                         profile.email,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodyMedium?.copyWith(
-                                          color:
-                                              isDarkMode
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              fontSize: 14,
+                                              color: isDarkMode
                                                   ? Colors.grey[300]
                                                   : Colors.grey[700],
-                                        ),
+                                            ),
                                       ),
                                       const SizedBox(height: 2),
                                       GestureDetector(
@@ -270,7 +275,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodySmall
-                                              ?.copyWith(color: Colors.blue),
+                                              ?.copyWith(
+                                                fontSize: 12,
+                                                color: Colors.blue,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -308,15 +316,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 title: Text(
                                   "Enable Notifications",
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        isDarkMode
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: isDarkMode
                                             ? Colors.white
                                             : Colors.black,
-                                  ),
+                                      ),
                                 ),
                                 value: _notificationsEnabled,
                                 onChanged: (val) {
@@ -336,13 +344,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ListTile(
                               title: Text(
                                 "Theme Mode",
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color:
-                                      isDarkMode ? Colors.white : Colors.black,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: isDarkMode
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
                               ),
                               trailing: Icon(
                                 _showAppearanceOptions
@@ -394,12 +404,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ListTile(
                               title: Text(
                                 "Logout",
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                    ),
                               ),
                               leading: Icon(Icons.logout, color: Colors.red),
                               onTap: _logout,
@@ -413,15 +424,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               children: [
                                 TextSpan(
                                   text: "Optional",
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.headlineMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        isDarkMode
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: isDarkMode
                                             ? Colors.white
                                             : Colors.black,
-                                  ),
+                                      ),
                                 ),
                                 const TextSpan(
                                   text: ".",
@@ -472,9 +483,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             title,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
-            ),
+                  fontWeight: FontWeight.bold,
+                  color:
+                      isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
+                ),
           ),
           const SizedBox(height: 8),
           ...children,
@@ -488,9 +500,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       title: Text(
         title,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: isDarkMode ? Colors.white : Colors.black,
-        ),
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: () {},
@@ -512,8 +524,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: isDarkMode ? Colors.white : Colors.black,
-            ),
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
           ),
         ],
       ),
