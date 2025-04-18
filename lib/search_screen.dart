@@ -422,46 +422,70 @@ class _SearchScreenState extends State<SearchScreen> {
     return _loading
         ? const Center(child: CircularProgressIndicator())
         : Expanded(
-            child: ListView.builder(
-              key: const PageStorageKey('searchResults'), // Use PageStorageKey
-              itemCount: _results.length,
-              itemBuilder: (context, index) {
-                final item = _results[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.grey[850]
-                      : Colors.white,
-                  child: ListTile(
-                    title: Text(
-                      item['title'],
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        fontFamily: 'OpenSauce',
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    key: const PageStorageKey(
+                        'searchResults'), // Use PageStorageKey
+                    itemCount: _results.length,
+                    itemBuilder: (context, index) {
+                      final item = _results[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black87,
+                            ? Colors.grey[850]
+                            : Colors.white,
+                        child: ListTile(
+                          title: Text(
+                            item['title'],
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              fontFamily: 'OpenSauce',
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black87,
+                            ),
+                          ),
+                          subtitle: Text(
+                            item['snippet'],
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[700],
+                              fontFamily: 'OpenSauce',
+                              fontSize: 14,
+                            ),
+                          ),
+                          onTap: () => _openLink(item['link'], item['title']),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                if (_results.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: ElevatedButton(
+                      onPressed: _showMoreResults,
+                      child: const Text(
+                        'Show More Results',
+                        style: TextStyle(
+                          fontFamily: 'OpenSauce',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    subtitle: Text(
-                      item['snippet'],
-                      style: TextStyle(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.grey[400]
-                            : Colors.grey[700],
-                        fontFamily: 'OpenSauce',
-                        fontSize: 14,
-                      ),
-                    ),
-                    onTap: () => _openLink(item['link'], item['title']),
                   ),
-                );
-              },
+              ],
             ),
           );
   }
