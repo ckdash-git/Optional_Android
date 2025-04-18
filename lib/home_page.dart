@@ -72,7 +72,7 @@ class HomePage extends StatelessWidget {
                     ),
                     _buildFeatureCard(
                       context,
-                      title: 'Compiler2',
+                      title: 'Document',
                       subtitle: 'Run and test code within the App.',
                       gradient: const LinearGradient(
                         colors: [Colors.purpleAccent, Colors.pinkAccent],
@@ -88,7 +88,7 @@ class HomePage extends StatelessWidget {
                     ),
                     _buildFeatureCard(
                       context,
-                      title: 'Projects',
+                      title: 'Blogs',
                       subtitle: 'Hands-on coding challenges.',
                       gradient: const LinearGradient(
                         colors: [Colors.greenAccent, Colors.teal],

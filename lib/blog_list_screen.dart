@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'web_view_screen.dart';
 
 class BlogListScreen extends StatefulWidget {
@@ -22,10 +23,10 @@ class _BlogListScreenState extends State<BlogListScreen> {
   void initState() {
     super.initState();
     items = getItemsForCategory(widget.title);
+    _loadFavorites(); // Load favorites from SharedPreferences
     // Initialize visit counts from existing items
     for (var item in items) {
       if (item["visits"] != null) {
-        // Extract number from "Nx" format
         String visitsStr = item["visits"].toString();
         int count = int.tryParse(visitsStr.replaceAll('x', '')) ?? 0;
         visitCounts[item["title"]] = count;
@@ -43,7 +44,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
         return [
           {
             "title": "Online Python Compiler",
-            "visits": "1x",
+            // "visits": "1x",
             "url":
                 "https://www.programiz.com/python-programming/online-compiler/"
           },
@@ -55,12 +56,47 @@ class _BlogListScreenState extends State<BlogListScreen> {
             "title": "C++ Online IDE",
             "url": "https://www.programiz.com/cpp-programming/online-compiler/"
           },
+          {
+            "title": "Online C Compiler",
+            "url": "https://www.programiz.com/c-programming/online-compiler/"
+          },
+          {
+            "title": "PHP Online Compiler",
+            "url": "https://www.programiz.com/php-programming/online-compiler/"
+          },
+          {
+            "title": "Ruby Online Compiler",
+            "url": "https://www.programiz.com/ruby-programming/online-compiler/"
+          },
+          {
+            "title": "C# Online Compiler",
+            "url":
+                "https://www.programiz.com/csharp-programming/online-compiler/"
+          },
+          {"title": "HTML Editor", "url": "https://www.w3schools.com/html/"},
+          {
+            "title": "CSS Editor",
+            "url":
+                "https://www.w3schools.com/css/tryit.asp?filename=trycss_default"
+          },
+          {
+            "title": "JavaScript Editor",
+            "url":
+                "https://www.w3schools.com/js/tryit.asp?filename=tryjs_default"
+          },
+          {"title": "DartPad", "url": "https://dartpad.dev/"},
+          {"title": "PHP Fiddle", "url": "https://phpfiddle.org/"},
+          {"title": "CodePen", "url": "https://codepen.io/"},
+          {"title": "JSFiddle", "url": "https://jsfiddle.net/"},
+          {"title": "Replit", "url": "https://replit.com/"},
+          {"title": "Glitch", "url": "https://glitch.com/"},
+          {"title": "CodeSandbox", "url": "https://codesandbox.io/"},
+          {"title": "JSBin", "url": "https://jsbin.com/"},
           {"title": "JavaScript Console", "url": "https://jsconsole.com/"},
           {"title": "Kotlin Playground", "url": "https://play.kotlinlang.org/"},
           {
             "title": "Swift Online Compiler",
-            "url":
-                "https://www.programiz.com/swift-programming/online-compiler/"
+            "url": "https://www.programiz.com/swift/online-compiler/"
           },
           {"title": "Rust Playground", "url": "https://play.rust-lang.org/"},
           {"title": "Go Playground", "url": "https://go.dev/play/"},
@@ -69,12 +105,16 @@ class _BlogListScreenState extends State<BlogListScreen> {
         return [
           {
             "title": "Flutter Development",
-            "visits": "1x",
+            // "visits": "1x",
             "url": "https://flutter.dev/learn"
           },
           {
             "title": "React Native Masterclass",
             "url": "https://reactnative.dev/docs/getting-started"
+          },
+          {
+            "title": "JAVA Class for Beginners",
+            "url": "https://www.geeksforgeeks.org/classes-objects-java/"
           },
           {
             "title": "Python for Beginners",
@@ -98,11 +138,11 @@ class _BlogListScreenState extends State<BlogListScreen> {
             "url": "https://developer.android.com/courses"
           },
         ];
-      case 'projects':
+      case 'blogs':
         return [
           {
             "title": "Todo App with Flutter",
-            "visits": "1x",
+            // "visits": "1x",
             "url": "https://flutter.dev/docs/cookbook"
           },
           {"title": "Weather App", "url": "https://openweathermap.org/guide"},
@@ -124,12 +164,13 @@ class _BlogListScreenState extends State<BlogListScreen> {
             "url": "https://github.com/topics/portfolio-website"
           },
           {"title": "Game Development", "url": "https://unity.com/learn"},
+          {"title": "Medium", "url": "https://medium.com/"},
         ];
       case 'community':
         return [
           {
             "title": "Stack Overflow",
-            "visits": "1x",
+            // "visits": "1x",
             "url": "https://stackoverflow.com/"
           },
           {
@@ -218,6 +259,22 @@ class _BlogListScreenState extends State<BlogListScreen> {
     updateFilteredItems();
   }
 
+  // Save favorites to SharedPreferences
+  Future<void> _saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setStringList('favorites', favorites.toList());
+  }
+
+  // Load favorites from SharedPreferences
+  Future<void> _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedFavorites = prefs.getStringList('favorites') ?? [];
+    setState(() {
+      favorites = savedFavorites.toSet();
+    });
+    updateFilteredItems();
+  }
+
   void toggleFavorite(String title) {
     setState(() {
       if (favorites.contains(title)) {
@@ -225,6 +282,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
       } else {
         favorites.add(title);
       }
+      _saveFavorites(); // Save updated favorites to SharedPreferences
       updateFilteredItems();
     });
   }
