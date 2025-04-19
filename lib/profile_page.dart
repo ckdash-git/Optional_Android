@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:optional/about_app.dart';
+import 'package:optional/report_bug.dart';
+import 'package:optional/terms_condition.dart';
 import 'package:optional/theme_controller.dart';
 import 'package:optional/user_profile.dart';
 import 'package:provider/provider.dart';
@@ -445,9 +448,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           isDarkMode,
                           title: "ABOUT",
                           children: [
-                            buildTile("About the App", isDarkMode),
-                            buildTile("Terms & Conditions", isDarkMode),
-                            buildTile("Report a Bug", isDarkMode),
+                            buildTile(
+                              "About the App",
+                              isDarkMode,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const AboutAppScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            buildTile("Terms & Conditions", isDarkMode,
+                                onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        TermsAndConditionsScreen()),
+                              );
+                            }),
+
+                            buildTile("Report a Bug", isDarkMode, onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        ReportBugScreen()),
+                              );
+                            }),
                             // Add logout button
                             ListTile(
                               title: Text(
@@ -543,7 +574,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget buildTile(String title, bool isDarkMode) {
+  Widget buildTile(String title, bool isDarkMode, {VoidCallback? onTap}) {
     return ListTile(
       title: Text(
         title,
@@ -553,7 +584,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: () {},
+      onTap: onTap,
     );
   }
 
