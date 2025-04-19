@@ -9,6 +9,7 @@ class ThemeController {
   static void updateThemeMode(ThemeMode mode) {
     themeModeNotifier.value = mode;
     // Force a rebuild of all listeners
+    // ignore: invalid_use_of_protected_member
     themeModeNotifier.notifyListeners();
   }
 }
