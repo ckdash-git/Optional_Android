@@ -64,7 +64,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                   Navigator.of(context).pop(); // Close dialog
 
                   Provider.of<UserProfileProvider>(context, listen: false)
-                      .updateProfile(email: email);
+                      .updateProfile(email: email, name: '');
 
                   Navigator.pushReplacement(
                     context,
@@ -109,7 +109,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
       } else {
         // If already verified
         Provider.of<UserProfileProvider>(context, listen: false)
-            .updateProfile(email: email);
+            .updateProfile(email: email, name: '');
 
         Navigator.pushReplacement(
           context,
