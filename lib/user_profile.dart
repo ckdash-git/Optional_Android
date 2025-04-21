@@ -7,17 +7,13 @@ class UserProfile {
   UserProfile({required this.name, required this.email});
 }
 
-class UserProfileProvider extends ChangeNotifier {
-  final UserProfile _profile = UserProfile(
-    name: "Chandan Kumar Dash",
-    email: "chandan@email.com",
-  );
+class UserProfileProvider with ChangeNotifier {
+  UserProfile? _profile;
 
-  UserProfile get profile => _profile;
+  UserProfile? get profile => _profile;
 
-  void updateProfile({String? name, String? email}) {
-    if (name != null) _profile.name = name;
-    if (email != null) _profile.email = email;
+  void updateProfile({required String name, required String email}) {
+    _profile = UserProfile(name: name, email: email);
     notifyListeners();
   }
 }
