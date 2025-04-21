@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:optional/about_app.dart';
-import 'package:optional/report_bug.dart';
-import 'package:optional/terms_condition.dart';
 import 'package:optional/theme_controller.dart';
 import 'package:optional/user_profile.dart';
 import 'package:provider/provider.dart';
@@ -42,27 +39,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
-        final email = user.email;
-
-        // Fetch user data from Firestore (or Realtime Database)
         final userDoc = await FirebaseFirestore.instance
-            .collection('users') // Replace 'users' with your collection name
-            .doc(email) // Assuming email is used as the document ID
+            .collection('users')
+            .doc(user.uid)
             .get();
 
         if (userDoc.exists) {
-          final userData = userDoc.data();
+          final userData = userDoc.data()!;
+
+          final name =
+              userData['fullName'] ?? user.displayName ?? 'Name Not Available';
+          final email = user.email ?? 'No email Available';
+
+          // Update controllers
           setState(() {
-            _nameController.text = userData?['name'] ?? '';
-            _emailController.text = email ?? '';
+            _nameController.text = name;
+            _emailController.text = email;
           });
+
+          // Also update the provider so the UI reflects the changes
+          Provider.of<UserProfileProvider>(context, listen: false)
+              .updateProfile(
+            name: name,
+            email: email,
+          );
         } else {
-          // Handle case where user data is not found
-          print('User data not found for email: $email');
+          // Create a new document for this user if it doesn't exist
+          final name = user.displayName ?? 'User';
+          final email = user.email ?? 'No Email';
+
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({
+            'name': name,
+            'email': email,
+            'createdAt': Timestamp.now(),
+          });
+
+          // Update with default values
+          setState(() {
+            _nameController.text = name;
+            _emailController.text = email;
+          });
+
+          Provider.of<UserProfileProvider>(context, listen: false)
+              .updateProfile(
+            name: name,
+            email: email,
+          );
         }
       }
     } catch (e) {
       print('Error fetching user profile: $e');
+      // Show an error snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load profile: $e')),
+      );
     }
   }
 
@@ -74,61 +107,106 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
+  final TextEditingController _passwordController = TextEditingController();
   void _editProfileDialog() {
-    // Ensure the controllers are updated with the latest profile data
-    _nameController.text = _nameController.text.isNotEmpty
-        ? _nameController.text
-        : "Enter your name"; // Default placeholder if empty
-    _emailController.text = _emailController.text.isNotEmpty
-        ? _emailController.text
-        : "Enter your email"; // Default placeholder if empty
+    final userProfile =
+        Provider.of<UserProfileProvider>(context, listen: false);
+
+    // Pre-fill controllers with latest data
+    _nameController.text = userProfile.profile!.name;
+    _emailController.text = userProfile.profile!.email;
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Edit Profile'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameController, // Display current name
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'Enter your name', // Placeholder text
+            title: const Text('Edit Profile'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    hintText: 'Enter your name',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _emailController, // Display current email
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  hintText: 'Enter your email', // Placeholder text
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    hintText: 'Enter your email',
+                  ),
                 ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Save the updated profile data
-                Provider.of<UserProfileProvider>(
-                  context,
-                  listen: false,
-                ).updateProfile(
-                  name: _nameController.text,
-                  email: _emailController.text,
-                );
-                Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
+              TextButton(
+                onPressed: () async {
+                  final name = _nameController.text.trim();
+                  final email = _emailController.text.trim();
+
+                  // Update Provider
+                  final userProfile = Provider.of<UserProfileProvider>(
+                    context,
+                    listen: false,
+                  );
+
+                  // Update Firestore
+
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('User not logged in')),
+                    );
+                    return;
+                  }
+                  try {
+                    // 🔹 Update name in Firestore
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user.uid)
+                        .update({'fullName': name});
+
+                    // 🔹 Update email in FirebaseAuth
+                    if (email != user.email) {
+                      // Re-authenticate before changing email
+                      final cred = EmailAuthProvider.credential(
+                        email: user.email!,
+                        password:
+                            _passwordController.text.trim(), // Ask for password
+                      );
+
+                      await user.reauthenticateWithCredential(cred);
+                      await user.updateEmail(email);
+
+                      // Optional: You may want to verify new email
+                      await user.sendEmailVerification();
+                      // Update email in Firestore too (if you're storing it)
+                      await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user.uid)
+                          .update({'email': email});
+                    }
+                    userProfile.updateProfile(name: name, email: email);
+
+                    Navigator.pop(context);
+                  } catch (e) {
+                    print('Error updating profile: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text('Failed to update: ${e.toString()}')),
+                    );
+                  }
+                },
+                child: const Text('Save'),
+              )
+            ]);
       },
     );
   }
@@ -221,14 +299,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await FirebaseAuth.instance.signOut();
 
-      // Navigate to login screen
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => LoginSignupScreen()),
-        (route) => false,
-      );
+      // No need for manual navigation as AuthGate will handle it
+      // The StreamBuilder in AuthGate will detect the auth state change
+      // and automatically show the LoginSignupScreen
     } catch (e) {
       print('Logout error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to logout: $e')),
+      );
     }
   }
 
@@ -274,6 +352,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Consumer<UserProfileProvider>(
                           builder: (context, userProfileProvider, _) {
                             final profile = userProfileProvider.profile;
+
+                            if (profile == null) {
+                              // Show a loading placeholder or shimmer
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+
                             return Row(
                               children: [
                                 const CircleAvatar(
@@ -448,37 +533,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           isDarkMode,
                           title: "ABOUT",
                           children: [
-                            buildTile(
-                              "About the App",
-                              isDarkMode,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const AboutAppScreen(),
-                                  ),
-                                );
-                              },
-                            ),
-                            buildTile("Terms & Conditions", isDarkMode,
-                                onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        TermsAndConditionsScreen()),
-                              );
-                            }),
-
-                            buildTile("Report a Bug", isDarkMode, onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        ReportBugScreen()),
-                              );
-                            }),
+                            buildTile("About the App", isDarkMode),
+                            buildTile("Terms & Conditions", isDarkMode),
+                            buildTile("Report a Bug", isDarkMode),
                             // Add logout button
                             ListTile(
                               title: Text(
@@ -574,7 +631,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget buildTile(String title, bool isDarkMode, {VoidCallback? onTap}) {
+  Widget buildTile(String title, bool isDarkMode) {
     return ListTile(
       title: Text(
         title,
@@ -584,7 +641,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: onTap,
+      onTap: () {},
     );
   }
 
