@@ -21,6 +21,8 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<ShakeWidgetState> _shakeKey = GlobalKey<ShakeWidgetState>();
+  bool _obscurePassword =
+      true; // Add this state variable to toggle password visibility
 
   bool isValidGmail(String email) {
     final gmailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$');
@@ -64,7 +66,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                   Navigator.of(context).pop(); // Close dialog
 
                   Provider.of<UserProfileProvider>(context, listen: false)
-                      .updateProfile(email: email, name: '');
+                      .updateProfile(email: email, fullName: '');
 
                   Navigator.pushReplacement(
                     context,
@@ -106,10 +108,20 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
             },
           ),
         );
+      } else if (user != null && user.emailVerified) {
+        Provider.of<UserProfileProvider>(context, listen: false).updateProfile(
+          email: user.email ?? '',
+          fullName: user.displayName ?? '', // Fetch the display name
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainScreen()),
+        );
       } else {
         // If already verified
         Provider.of<UserProfileProvider>(context, listen: false)
-            .updateProfile(email: email, name: '');
+            .updateProfile(email: email, fullName: '');
 
         Navigator.pushReplacement(
           context,
@@ -122,8 +134,10 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
         errorMessage = 'No user found for that email.';
       } else if (e.code == 'wrong-password') {
         errorMessage = 'Wrong password provided.';
+      } else if (e.code == 'user-disabled') {
+        errorMessage = 'This user account has been disabled.';
       } else {
-        errorMessage = 'Authentication failed.';
+        errorMessage = 'Authentication failed. Please try again.';
       }
 
       showDialog(
@@ -234,7 +248,8 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TextField(
                     controller: _passwordController,
-                    obscureText: true,
+                    obscureText:
+                        _obscurePassword, // Use the state variable here
                     style: TextStyle(
                       color: isDarkMode ? Colors.white : Colors.black,
                       fontWeight: FontWeight.normal,
@@ -246,6 +261,22 @@ class _LoginSignupScreenState extends State<LoginSignupScreen>
                         color:
                             isDarkMode ? Colors.white70 : Colors.grey.shade600,
                         fontWeight: FontWeight.bold,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: isDarkMode
+                              ? Colors.white70
+                              : Colors.grey.shade600,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword =
+                                !_obscurePassword; // Toggle password visibility
+                          });
+                        },
                       ),
                     ),
                   ),
