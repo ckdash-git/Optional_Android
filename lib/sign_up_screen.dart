@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:optional/login_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import for Firestore
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -13,7 +13,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -55,29 +55,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
         }
 
         // Attempt to create a user with email and password
-        await _auth.createUserWithEmailAndPassword(
+        UserCredential userCredential =
+            await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
-        // Close loading indicator
-        Navigator.of(context).pop();
+        // Get the created user
+        User? user = userCredential.user;
 
-        // Clear error message
-        setState(() {
-          _errorMessage = null;
-        });
+        if (user != null) {
+          // Save user details to Firestore
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({
+            'fullName': _fullNameController.text.trim(),
+            'email': user.email,
+            'uid': user.uid,
+          });
 
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created successfully!')),
-        );
+          // Send email verification
+          // await user.sendEmailVerification();
 
-        // Navigate to login page
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginSignupScreen()),
-        );
+          // Close loading indicator
+          Navigator.of(context).pop();
+
+          // Clear error message
+          setState(() {
+            _errorMessage = null;
+          });
+
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Account created successfully!',
+              ),
+            ),
+          );
+
+          // Navigate to the login page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginSignupScreen()),
+          );
+        }
       } on FirebaseAuthException catch (e) {
         // Close loading indicator
         Navigator.of(context).pop();
@@ -88,8 +111,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           errorMessage = 'The password is too weak.';
         } else if (e.code == 'invalid-email') {
           errorMessage = 'The email address is invalid.';
-        } else {
+        } else if (e.code == 'email-already-in-use') {
           errorMessage = 'This email is already registered.';
+        } else {
+          errorMessage = 'An unknown error occurred. Please try again.';
         }
 
         // Set error message
@@ -151,11 +176,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                       _labelText("Full Name", isDarkMode, theme),
                       _textField(
-                        _firstNameController,
-                        "Enter your first name",
+                        _fullNameController,
+                        "Enter your full name",
                         isDarkMode,
                         (value) => value == null || value.isEmpty
-                            ? 'First name is required'
+                            ? 'Name is required'
                             : null,
                       ),
                       const SizedBox(height: 12),
