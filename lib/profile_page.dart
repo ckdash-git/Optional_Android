@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:optional/about_app.dart';
+import 'package:optional/login_page.dart';
+import 'package:optional/report_bug.dart';
+import 'package:optional/terms_condition.dart';
 import 'package:optional/theme_controller.dart';
 import 'package:optional/user_profile.dart';
 import 'package:provider/provider.dart';
-import 'package:optional/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -47,45 +50,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (userDoc.exists) {
           final userData = userDoc.data()!;
 
-          final name =
+          final fullName =
               userData['fullName'] ?? user.displayName ?? 'Name Not Available';
           final email = user.email ?? 'No email Available';
 
           // Update controllers
           setState(() {
-            _nameController.text = name;
+            _nameController.text = fullName;
             _emailController.text = email;
           });
 
           // Also update the provider so the UI reflects the changes
           Provider.of<UserProfileProvider>(context, listen: false)
               .updateProfile(
-            name: name,
+            fullName: fullName,
             email: email,
           );
         } else {
           // Create a new document for this user if it doesn't exist
-          final name = user.displayName ?? 'User';
+          final fullName = user.displayName ?? 'User';
           final email = user.email ?? 'No Email';
 
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
               .set({
-            'name': name,
+            'fullName': fullName,
             'email': email,
-            'createdAt': Timestamp.now(),
+            // 'createdAt': Timestamp.now(),
           });
 
           // Update with default values
           setState(() {
-            _nameController.text = name;
+            _nameController.text = fullName;
             _emailController.text = email;
           });
 
           Provider.of<UserProfileProvider>(context, listen: false)
               .updateProfile(
-            name: name,
+            fullName: fullName,
             email: email,
           );
         }
@@ -113,8 +116,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Provider.of<UserProfileProvider>(context, listen: false);
 
     // Pre-fill controllers with latest data
-    _nameController.text = userProfile.profile!.name;
-    _emailController.text = userProfile.profile!.email;
+    _nameController.text = userProfile.profile.fullName;
+    _emailController.text = userProfile.profile.email;
 
     showDialog(
       context: context,
@@ -148,7 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               TextButton(
                 onPressed: () async {
-                  final name = _nameController.text.trim();
+                  final fullName = _nameController.text.trim();
                   final email = _emailController.text.trim();
 
                   // Update Provider
@@ -171,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     await FirebaseFirestore.instance
                         .collection('users')
                         .doc(user.uid)
-                        .update({'fullName': name});
+                        .update({'fullName': fullName});
 
                     // 🔹 Update email in FirebaseAuth
                     if (email != user.email) {
@@ -193,7 +196,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           .doc(user.uid)
                           .update({'email': email});
                     }
-                    userProfile.updateProfile(name: name, email: email);
+                    userProfile.updateProfile(fullName: fullName, email: email);
+
+                    // This is the important line - update the local state too
+                    setState(() {
+                      _nameController.text = fullName;
+                      _emailController.text = email;
+                    });
 
                     Navigator.pop(context);
                   } catch (e) {
@@ -269,7 +278,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Logout button (top)
             TextButton(
               onPressed: () {
-                logoutUser(context);
+                Navigator.of(context).pop(); // Dismiss the logout dialog
+                logoutUser(context); // Proceed with logout
               },
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -299,9 +309,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await FirebaseAuth.instance.signOut();
 
-      // No need for manual navigation as AuthGate will handle it
-      // The StreamBuilder in AuthGate will detect the auth state change
-      // and automatically show the LoginSignupScreen
+      // Navigate to the login page after signing out
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginSignupScreen()),
+        (route) => false, // Remove all previous routes
+      );
     } catch (e) {
       print('Logout error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -353,12 +366,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           builder: (context, userProfileProvider, _) {
                             final profile = userProfileProvider.profile;
 
-                            if (profile == null) {
-                              // Show a loading placeholder or shimmer
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            }
-
                             return Row(
                               children: [
                                 const CircleAvatar(
@@ -378,7 +385,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        profile.name,
+                                        profile.fullName,
                                         style: Theme.of(context)
                                             .textTheme
                                             .titleLarge
@@ -533,9 +540,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           isDarkMode,
                           title: "ABOUT",
                           children: [
-                            buildTile("About the App", isDarkMode),
-                            buildTile("Terms & Conditions", isDarkMode),
-                            buildTile("Report a Bug", isDarkMode),
+                            buildTile(
+                              "About the App",
+                              isDarkMode,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const AboutAppScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            buildTile("Terms & Conditions", isDarkMode,
+                                onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        TermsAndConditionsScreen()),
+                              );
+                            }),
+
+                            buildTile("Report a Bug", isDarkMode, onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ReportBugScreen()),
+                              );
+                            }),
                             // Add logout button
                             ListTile(
                               title: Text(
@@ -631,7 +665,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget buildTile(String title, bool isDarkMode) {
+  Widget buildTile(String title, bool isDarkMode, {VoidCallback? onTap}) {
     return ListTile(
       title: Text(
         title,
@@ -641,7 +675,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: () {},
+      onTap: onTap,
     );
   }
 
