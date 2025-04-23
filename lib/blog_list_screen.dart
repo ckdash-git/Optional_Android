@@ -196,6 +196,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
             "url": "https://community.codenewbie.org/"
           },
         ];
+      
       default:
         return [];
     }
