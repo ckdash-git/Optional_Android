@@ -21,6 +21,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   bool canGoBack = false;
   bool canGoForward = false;
   bool showNavigationBar = false;
+  double progress = 0.0; // Track the loading progress
 
   @override
   void initState() {
@@ -35,15 +36,22 @@ class _WebViewScreenState extends State<WebViewScreen> {
           onPageStarted: (String url) {
             setState(() {
               isLoading = true;
+              progress = 0.0; // Reset progress
               showNavigationBar = false;
             });
           },
           onPageFinished: (String url) async {
             setState(() {
               isLoading = false;
+              progress = 1.0; // Set progress to 100% when finished
               showNavigationBar = true;
             });
             await updateNavigationState();
+          },
+          onProgress: (int progressValue) {
+            setState(() {
+              progress = progressValue / 100.0; // Update progress
+            });
           },
           onNavigationRequest: (NavigationRequest request) {
             return NavigationDecision.navigate;
@@ -158,21 +166,37 @@ class _WebViewScreenState extends State<WebViewScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // ignore: deprecated_member_use
     return WillPopScope(
       onWillPop: () async {
-        // Always return false to disable the back button functionality
+        // Return false to disable the back button
         return false;
       },
       child: Scaffold(
         body: Stack(
           children: [
-            Padding(
-              padding:
-                  const EdgeInsets.only(top: 40), // Add margin from the top
-              child: WebViewWidget(controller: controller),
+            SafeArea(
+              child: Column(
+                children: [
+                  // Progress bar at the top with margin
+                  if (isLoading)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor:
+                            isDark ? Colors.grey[800] : Colors.grey[300],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isDark ? Colors.blue : Colors.green,
+                        ),
+                      ),
+                    ),
+                  // WebView content
+                  Expanded(
+                    child: WebViewWidget(controller: controller),
+                  ),
+                ],
+              ),
             ),
-            if (isLoading) const Center(child: CircularProgressIndicator()),
           ],
         ),
         bottomNavigationBar: showNavigationBar
