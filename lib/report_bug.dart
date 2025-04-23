@@ -4,6 +4,29 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
+import 'package:firebase_core/firebase_core.dart'; // Import FirebaseCore
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Bug Report App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ReportBugScreen(),
+    );
+  }
+}
 
 class ReportBugScreen extends StatefulWidget {
   const ReportBugScreen({super.key});
@@ -15,7 +38,8 @@ class ReportBugScreen extends StatefulWidget {
 class _ReportBugScreenState extends State<ReportBugScreen> {
   File? _screenshot;
   bool _isUploading = false;
-  final TextEditingController _bugMessageController = TextEditingController();
+  final TextEditingController _bugdescriptionController =
+      TextEditingController();
 
   Future<void> _pickImage() async {
     final permissionStatus = await Permission.photos.request();
@@ -46,10 +70,10 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
 
       final uploadTask = ref.putFile(file);
       final snapshot = await uploadTask.whenComplete(() => {});
-      final imageUrl = await snapshot.ref.getDownloadURL();
+      final screeeshot = await snapshot.ref.getDownloadURL();
 
-      print("Image uploaded to: $imageUrl");
-      return imageUrl;
+      print("Image uploaded to: $screeeshot");
+      return screeeshot;
     } catch (e) {
       print("Error uploading image: $e");
       return null;
@@ -57,7 +81,16 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
   }
 
   Future<void> _submitReport() async {
-    if (_bugMessageController.text.trim().isEmpty && _screenshot == null) {
+    final currentUser = FirebaseAuth.instance.currentUser; // Get current user
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('You must be logged in to submit a bug report.')),
+      );
+      return;
+    }
+
+    if (_bugdescriptionController.text.trim().isEmpty && _screenshot == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Please describe the issue or attach a screenshot.')),
@@ -70,20 +103,21 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
     });
 
     try {
-      String? imageUrl;
+      String? screeeshot;
       if (_screenshot != null) {
-        imageUrl = await _uploadImage(_screenshot!);
+        screeeshot = await _uploadImage(_screenshot!);
       }
 
       await FirebaseFirestore.instance.collection('bugReports').add({
-        'message': _bugMessageController.text.trim(),
+        'userId': currentUser.uid, // Add the user's uid to the bug report
+        'description': _bugdescriptionController.text.trim(),
         'status': 'Open',
         'timestamp': FieldValue.serverTimestamp(),
-        'imageUrl': imageUrl,
+        'screeeshot': screeeshot,
       });
 
       setState(() {
-        _bugMessageController.clear();
+        _bugdescriptionController.clear();
         _screenshot = null;
       });
 
@@ -132,7 +166,7 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
                           ),
                           padding: const EdgeInsets.all(12),
                           child: TextField(
-                            controller: _bugMessageController,
+                            controller: _bugdescriptionController,
                             maxLines: 5,
                             decoration: const InputDecoration.collapsed(
                               hintText:
@@ -157,11 +191,25 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
                         const Text("YOUR BUG TICKETS"),
                         const SizedBox(height: 24),
                         StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('bugReports')
-                              .orderBy('timestamp', descending: true)
-                              .snapshots(),
+                          stream: FirebaseAuth.instance.currentUser == null
+                              ? null
+                              : FirebaseFirestore.instance
+                                  .collection('bugReports')
+                                  .where('userId',
+                                      isEqualTo: FirebaseAuth.instance
+                                          .currentUser!.uid) // Filter by userId
+                                  // .orderBy('timestamp',
+                                  //     descending:
+                                  //         true) // Optional: Order by timestamp
+                                  .snapshots(),
                           builder: (context, snapshot) {
+                            if (FirebaseAuth.instance.currentUser == null) {
+                              return const Center(
+                                child: Text(
+                                    "You must be logged in to view your bug tickets."),
+                              );
+                            }
+
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Center(
@@ -169,7 +217,10 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
                             }
 
                             if (snapshot.hasError) {
-                              return const Text("Error loading bug reports.");
+                              print(
+                                  "Error loading bug reports: ${snapshot.error}");
+                              return const Center(
+                                  child: Text("Error loading bug reports."));
                             }
 
                             if (!snapshot.hasData ||
@@ -200,24 +251,23 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
                                 final bugDoc = snapshot.data!.docs[index];
                                 final bug =
                                     bugDoc.data() as Map<String, dynamic>;
-                                final message =
-                                    bug['message']?.toString() ?? '';
+                                final description =
+                                    bug['description']?.toString() ?? '';
                                 final status =
                                     bug['status']?.toString() ?? 'Unknown';
-                                final imageUrl =
-                                    bug['imageUrl']?.toString() ?? '';
+                                final screeeshot =
+                                    bug['screeeshot']?.toString() ?? '';
 
-                                if (message.isEmpty) return const SizedBox();
+                                if (description.isEmpty)
+                                  return const SizedBox();
 
                                 return Container(
-                                  margin: const EdgeInsets.only(
-                                      bottom: 8), // Reduced margin
-                                  padding: const EdgeInsets.all(
-                                      8), // Reduced padding
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(
-                                        8), // Reduced border radius
-                                    color: isDarkMode
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
                                         ? Colors.grey[800]
                                         : Colors.blueGrey[50],
                                     border: Border.all(
@@ -227,9 +277,8 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black12,
-                                        blurRadius: 2, // Reduced blur radius
-                                        offset: Offset(
-                                            0, 1), // Reduced shadow offset
+                                        blurRadius: 2,
+                                        offset: Offset(0, 1),
                                       ),
                                     ],
                                   ),
@@ -238,47 +287,45 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       const Text(
-                                        "Message:",
+                                        "description:",
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 12, // Reduced font size
+                                          fontSize: 12,
                                           color: Colors.black87,
                                         ),
                                       ),
-                                      const SizedBox(
-                                          height: 4), // Reduced spacing
+                                      const SizedBox(height: 4),
                                       Text(
-                                        message,
+                                        description,
                                         style: TextStyle(
-                                          fontSize: 12, // Reduced font size
-                                          color: isDarkMode
+                                          fontSize: 12,
+                                          color: Theme.of(context).brightness ==
+                                                  Brightness.dark
                                               ? Colors.white70
                                               : Colors.black54,
                                         ),
                                       ),
-                                      const SizedBox(
-                                          height: 6), // Reduced spacing
+                                      const SizedBox(height: 6),
                                       Text(
                                         "Status: $status",
                                         style: TextStyle(
-                                          fontSize: 12, // Reduced font size
+                                          fontSize: 12,
                                           color: status.toLowerCase() == 'open'
                                               ? Colors.orange
                                               : Colors.green,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      if (imageUrl.isNotEmpty)
+                                      if (screeeshot.isNotEmpty)
                                         Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 8), // Reduced padding
+                                          padding:
+                                              const EdgeInsets.only(top: 8),
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                                8), // Reduced border radius
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                             child: Image.network(
-                                              imageUrl,
-                                              height:
-                                                  100, // Reduced image height
+                                              screeeshot,
+                                              height: 100,
                                               width: double.infinity,
                                               fit: BoxFit.cover,
                                               errorBuilder: (context, error,
@@ -289,8 +336,9 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
                                                           color: Colors.red)),
                                               loadingBuilder: (context, child,
                                                   loadingProgress) {
-                                                if (loadingProgress == null)
+                                                if (loadingProgress == null) {
                                                   return child;
+                                                }
                                                 return const Center(
                                                     child:
                                                         CircularProgressIndicator());
@@ -344,3 +392,7 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
     );
   }
 }
+
+// extension on User {
+//   get userId => null;
+// }
