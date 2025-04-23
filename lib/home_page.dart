@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:optional/blog_list_screen.dart';
+import 'package:optional/referal_screen.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -102,6 +103,14 @@ class HomePage extends StatelessWidget {
                         colors: [Colors.blueAccent, Colors.indigo],
                       ),
                     ),
+                    _buildFeatureCard(
+                      context,
+                      title: 'Referal',
+                      subtitle: 'Connect with others.',
+                      gradient: const LinearGradient(
+                        colors: [Colors.pinkAccent, Colors.indigo],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -155,12 +164,22 @@ class HomePage extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BlogListScreen(title: title),
-          ),
-        );
+        if (title == 'Referal') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  const ReferalScreen(), // Navigate to ReferalScreen
+            ),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BlogListScreen(title: title),
+            ),
+          );
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(16),
