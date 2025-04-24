@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_cast
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -50,15 +52,21 @@ class _ReferalScreenState extends State<ReferalScreen> {
       final normalizedInput = company.toLowerCase();
 
       final List<Map<String, dynamic>> fetchedEmployees = querySnapshot.docs
-          .where((doc) =>
-              doc['Company'] != null &&
-              doc['Company'].toString().toLowerCase().contains(normalizedInput))
-          .map((doc) => {
-                "Name": doc["Name"],
-                "Email": doc["Email"],
-                "Company": doc["Company"],
-              })
-          .toList();
+    .where((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return data.containsKey("Company") &&
+             data["Company"].toString().toLowerCase().contains(normalizedInput);
+    })
+    .map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return {
+        "Name": data["Name"] ?? "No Name",
+        "Email": data["Email"] ?? "No Email",
+        "Company": data["Company"] ?? "Unknown",
+      };
+    })
+    .toList();
+
 
       setState(() {
         employees = fetchedEmployees;
