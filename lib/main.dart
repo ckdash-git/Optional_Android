@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:optional/auth_gate.dart';
 import 'package:optional/theme_controller.dart';
-import 'package:optional/login_page.dart';
 import 'package:optional/user_profile.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,6 +19,9 @@ void main() async {
       create: (_) => UserProfileProvider(),
       child: const MyApp(),
     ),
+  );
+   await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
 }
 
