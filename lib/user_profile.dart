@@ -1,19 +1,24 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 class UserProfile {
-  String name;
+  String fullName;
   String email;
 
-  UserProfile({required this.name, required this.email});
+  UserProfile({required this.fullName, required this.email});
 }
 
-class UserProfileProvider with ChangeNotifier {
-  UserProfile? _profile;
+class UserProfileProvider extends ChangeNotifier {
+  final UserProfile _profile = UserProfile(
+    fullName: FirebaseAuth.instance.currentUser?.displayName ?? "Chandan",
+    email: FirebaseAuth.instance.currentUser?.email ?? "",
+  );
 
-  UserProfile? get profile => _profile;
+  UserProfile get profile => _profile;
 
-  void updateProfile({required String name, required String email}) {
-    _profile = UserProfile(name: name, email: email);
+  void updateProfile({String? fullName, String? email}) {
+    if (fullName != null) _profile.fullName = fullName;
+    if (email != null) _profile.email = email;
     notifyListeners();
   }
 }
