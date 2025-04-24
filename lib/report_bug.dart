@@ -258,8 +258,9 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
                                 final screeeshot =
                                     bug['screeeshot']?.toString() ?? '';
 
-                                if (description.isEmpty)
+                                if (description.isEmpty) {
                                   return const SizedBox();
+                                }
 
                                 return Container(
                                   margin: const EdgeInsets.only(bottom: 8),
