@@ -5,6 +5,7 @@ import 'package:optional/user_profile.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,18 +14,29 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
+  // Setup Firebase Messaging
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  // Request permission (important for Android 13+)
+  NotificationSettings settings = await messaging.requestPermission();
+
+  // Get FCM token
+  String? token = await messaging.getToken();
+  print("FCM Token: $token");
+
+  // Foreground message handler
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print("Foreground Message: ${message.notification?.title}");
+  });
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => UserProfileProvider(),
       child: const MyApp(),
     ),
   );
-   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
