@@ -1,8 +1,3 @@
-// This is the main screen of the app that contains the bottom navigation bar and the three tabs: Home, Search, and Profile.
-// It uses a StatefulWidget to manage the state of the selected tab and updates the UI accordingly.
-// The screen is built using a Scaffold widget, which contains the body and the bottom navigation bar.  
-// The body of the screen is a list of widgets that correspond to each tab, and the bottom navigation bar allows the user to switch between them.
-
 import 'package:flutter/material.dart';
 import 'package:optional/home_page.dart'; // Home
 import 'package:optional/profile_page.dart'; // Profile
