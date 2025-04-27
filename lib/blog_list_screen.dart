@@ -43,160 +43,728 @@ class _BlogListScreenState extends State<BlogListScreen> {
       case 'compiler':
         return [
           {
-            "title": "Online Python Compiler",
-            // "visits": "1x",
+            "title": "Swift",
+            "url":
+                "https://www.programiz.com/swift-programming/online-compiler/"
+          },
+          {
+            "title": "Kotlin",
+            "url":
+                "https://www.programiz.com/kotlin-programming/online-compiler/"
+          },
+          {
+            "title": "Python",
             "url":
                 "https://www.programiz.com/python-programming/online-compiler/"
           },
           {
-            "title": "Java Compiler",
+            "title": "Java",
             "url": "https://www.programiz.com/java-programming/online-compiler/"
           },
           {
-            "title": "C++ Online IDE",
+            "title": "JavaScript",
+            "url": "https://www.programiz.com/javascript/online-compiler/"
+          },
+          {
+            "title": "C++",
             "url": "https://www.programiz.com/cpp-programming/online-compiler/"
           },
           {
-            "title": "Online C Compiler",
+            "title": "C",
             "url": "https://www.programiz.com/c-programming/online-compiler/"
           },
           {
-            "title": "PHP Online Compiler",
+            "title": "PHP",
             "url": "https://www.programiz.com/php-programming/online-compiler/"
           },
           {
-            "title": "Ruby Online Compiler",
-            "url": "https://www.programiz.com/ruby-programming/online-compiler/"
+            "title": "SQL",
+            "url": "https://www.programiz.com/sql/online-compiler/"
           },
           {
-            "title": "C# Online Compiler",
-            "url":
-                "https://www.programiz.com/csharp-programming/online-compiler/"
-          },
-          {"title": "HTML Editor", "url": "https://www.w3schools.com/html/"},
-          {
-            "title": "CSS Editor",
-            "url":
-                "https://www.w3schools.com/css/tryit.asp?filename=trycss_default"
+            "title": "TypeScript",
+            "url": "https://www.programiz.com/typescript/online-compiler/"
           },
           {
-            "title": "JavaScript Editor",
-            "url":
-                "https://www.w3schools.com/js/tryit.asp?filename=tryjs_default"
+            "title": "Rust",
+            "url": "https://www.programiz.com/rust/online-compiler/"
           },
-          {"title": "DartPad", "url": "https://dartpad.dev/"},
-          {"title": "PHP Fiddle", "url": "https://phpfiddle.org/"},
-          {"title": "CodePen", "url": "https://codepen.io/"},
-          {"title": "JSFiddle", "url": "https://jsfiddle.net/"},
-          {"title": "Replit", "url": "https://replit.com/"},
-          {"title": "Glitch", "url": "https://glitch.com/"},
-          {"title": "CodeSandbox", "url": "https://codesandbox.io/"},
-          {"title": "JSBin", "url": "https://jsbin.com/"},
-          {"title": "JavaScript Console", "url": "https://jsconsole.com/"},
-          {"title": "Kotlin Playground", "url": "https://play.kotlinlang.org/"},
           {
-            "title": "Swift Online Compiler",
-            "url": "https://www.programiz.com/swift/online-compiler/"
+            "title": "HTML",
+            "url": "https://www.programiz.com/html/online-compiler/"
           },
-          {"title": "Rust Playground", "url": "https://play.rust-lang.org/"},
-          {"title": "Go Playground", "url": "https://go.dev/play/"},
+          {"title": "R", "url": "https://www.programiz.com/r/online-compiler/"},
+          {
+            "title": "Go",
+            "url": "https://www.programiz.com/golang/online-compiler/"
+          },
+          {"title": "Dart", "url": "https://dartpad.dev/"},
+          {"title": "Scala", "url": "https://scastie.scala-lang.org/"},
+          {"title": "Perl", "url": "https://onecompiler.com/perl"}
         ];
-      case 'classes':
+
+      case 'frameworks':
         return [
           {
-            "title": "Flutter Development",
-            // "visits": "1x",
-            "url": "https://flutter.dev/learn"
+            "title": "SwiftUI",
+            "url": "https://developer.apple.com/xcode/swiftui/",
+            "iconName": "swift"
           },
           {
-            "title": "React Native Masterclass",
-            "url": "https://reactnative.dev/docs/getting-started"
+            "title": "UIKit",
+            "url": "https://developer.apple.com/documentation/uikit",
+            "iconName": "iphone"
           },
           {
-            "title": "JAVA Class for Beginners",
-            "url": "https://www.geeksforgeeks.org/classes-objects-java/"
+            "title": "Combine",
+            "url": "https://developer.apple.com/documentation/combine/",
+            "iconName": "link"
           },
           {
-            "title": "Python for Beginners",
-            "url": "https://www.python.org/about/gettingstarted/"
-          },
-          {"title": "Advanced JavaScript", "url": "https://javascript.info/"},
-          {
-            "title": "Data Structures & Algorithms",
-            "url": "https://www.geeksforgeeks.org/data-structures/"
+            "title": "CoreData",
+            "url": "https://developer.apple.com/documentation/coredata",
+            "iconName": "tray"
           },
           {
-            "title": "Machine Learning Basics",
-            "url": "https://www.tensorflow.org/learn"
+            "title": "Flutter",
+            "url": "https://flutter.dev/",
+            "iconName": "circle.grid.cross"
           },
           {
-            "title": "Web Development Bootcamp",
-            "url": "https://www.w3schools.com/"
+            "title": "React",
+            "url": "https://reactjs.org/docs/getting-started.html",
+            "iconName": "atom"
           },
           {
-            "title": "Mobile App Development",
-            "url": "https://developer.android.com/courses"
+            "title": "React Native",
+            "url": "https://reactnative.dev/docs/getting-started",
+            "iconName": "app.badge"
           },
+          {
+            "title": "Angular",
+            "url": "https://angular.io/docs",
+            "iconName": "chevron.right"
+          },
+          {
+            "title": "Vue.js",
+            "url": "https://vuejs.org/guide/introduction.html",
+            "iconName": "eye"
+          },
+          {
+            "title": "Svelte",
+            "url": "https://svelte.dev/docs",
+            "iconName": "flame"
+          },
+          {
+            "title": "Next.js",
+            "url": "https://nextjs.org/docs",
+            "iconName": "forward"
+          },
+          {
+            "title": "Nuxt.js",
+            "url": "https://nuxt.com/docs",
+            "iconName": "arrow.up.right"
+          },
+          {
+            "title": "Express",
+            "url": "https://expressjs.com/",
+            "iconName": "bolt"
+          },
+          {
+            "title": "NestJS",
+            "url": "https://docs.nestjs.com/",
+            "iconName": "bolt.shield"
+          },
+          {
+            "title": "Django",
+            "url": "https://docs.djangoproject.com/en/stable/",
+            "iconName": "book"
+          },
+          {
+            "title": "Flask",
+            "url": "https://flask.palletsprojects.com/",
+            "iconName": "flask"
+          },
+          {
+            "title": "FastAPI",
+            "url": "https://fastapi.tiangolo.com/",
+            "iconName": "bolt.horizontal"
+          },
+          {
+            "title": "Rails",
+            "url": "https://guides.rubyonrails.org/",
+            "iconName": "cube"
+          },
+          {
+            "title": "Laravel",
+            "url": "https://laravel.com/docs",
+            "iconName": "square.stack"
+          },
+          {
+            "title": "Symfony",
+            "url": "https://symfony.com/doc/current/index.html",
+            "iconName": "circle"
+          },
+          {
+            "title": "CodeIgniter",
+            "url": "https://codeigniter.com/user_guide/",
+            "iconName": "flame"
+          },
+          {
+            "title": "Spring Boot",
+            "url": "https://spring.io/projects/spring-boot",
+            "iconName": "leaf"
+          },
+          {
+            "title": "Spring",
+            "url": "https://spring.io/projects/spring-framework",
+            "iconName": "leaf.fill"
+          },
+          {
+            "title": "Micronaut",
+            "url": "https://docs.micronaut.io/latest/guide/",
+            "iconName": "thermometer"
+          },
+          {
+            "title": "Quarkus",
+            "url": "https://quarkus.io/guides/",
+            "iconName": "speedometer"
+          },
+          {
+            "title": "ASP.NET",
+            "url":
+                "https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-7.0",
+            "iconName": "dotnet"
+          },
+          {
+            "title": ".NET",
+            "url": "https://learn.microsoft.com/en-us/dotnet/",
+            "iconName": "circlebadge"
+          },
+          {
+            "title": "Electron",
+            "url": "https://www.electronjs.org/docs",
+            "iconName": "desktopcomputer"
+          },
+          {
+            "title": "Capacitor",
+            "url": "https://capacitorjs.com/docs",
+            "iconName": "bolt.ring.closed"
+          },
+          {
+            "title": "Ionic",
+            "url": "https://ionicframework.com/docs",
+            "iconName": "waveform"
+          }
+          // ...and so on for the rest
         ];
+
       case 'blogs':
         return [
+          {"title": "GeeksforGeeks", "url": "https://www.geeksforgeeks.org"},
           {
-            "title": "Todo App with Flutter",
-            // "visits": "1x",
-            "url": "https://flutter.dev/docs/cookbook"
+            "title": "Medium - Programming",
+            "url": "https://medium.com/topic/programming"
           },
-          {"title": "Weather App", "url": "https://openweathermap.org/guide"},
+          {"title": "Dev.to", "url": "https://dev.to"},
+          {"title": "Stack Overflow Blog", "url": "https://stackoverflow.blog"},
+          {"title": "Hackernoon", "url": "https://hackernoon.com"},
+          {"title": "Hashnode", "url": "https://hashnode.com"},
           {
-            "title": "Chat Application",
-            "url": "https://firebase.google.com/docs/cloud-messaging"
+            "title": "Towards Data Science",
+            "url": "https://towardsdatascience.com"
           },
+          {"title": "freeCodeCamp", "url": "https://www.freecodecamp.org/news"},
           {
-            "title": "E-commerce Platform",
-            "url": "https://stripe.com/docs/development"
+            "title": "Smashing Magazine",
+            "url": "https://www.smashingmagazine.com"
           },
+          {"title": "CSS-Tricks", "url": "https://css-tricks.com"},
+          {"title": "CodeProject", "url": "https://www.codeproject.com"},
+          {"title": "Scotch.io", "url": "https://scotch.io"},
+          {"title": "SitePoint", "url": "https://www.sitepoint.com"},
           {
-            "title": "Social Media Clone",
-            "url": "https://firebase.google.com/docs/auth"
-          },
-          {"title": "Blog Platform", "url": "https://medium.com/"},
-          {
-            "title": "Portfolio Website",
-            "url": "https://github.com/topics/portfolio-website"
-          },
-          {"title": "Game Development", "url": "https://unity.com/learn"},
-          {"title": "Medium", "url": "https://medium.com/"},
-        ];
-      case 'community':
-        return [
-          {
-            "title": "Stack Overflow",
-            // "visits": "1x",
-            "url": "https://stackoverflow.com/"
-          },
-          {
-            "title": "GitHub Discussions",
-            "url": "https://github.com/discussions"
-          },
-          {
-            "title": "Reddit Programming",
+            "title": "Reddit - Programming",
             "url": "https://www.reddit.com/r/programming/"
           },
-          {"title": "Dev.to Community", "url": "https://dev.to/"},
-          {"title": "Flutter Discord", "url": "https://discord.gg/flutter"},
+          {"title": "Lobsters", "url": "https://lobste.rs"},
+          {"title": "Codedamn", "url": "https://codedamn.com"},
+          {"title": "RayWenderlich", "url": "https://www.raywenderlich.com"},
+          {"title": "iOS Dev Weekly", "url": "https://iosdevweekly.com"},
           {
-            "title": "React Native Community",
-            "url": "https://reactnative.dev/community/overview"
+            "title": "Android Developers Blog",
+            "url": "https://android-developers.googleblog.com"
           },
           {
-            "title": "Python Developers Group",
-            "url": "https://www.python.org/community/"
+            "title": "Google Developers Blog",
+            "url": "https://developers.googleblog.com"
           },
           {
-            "title": "CodeNewbie Community",
-            "url": "https://community.codenewbie.org/"
+            "title": "Microsoft Developer Blog",
+            "url": "https://devblogs.microsoft.com"
           },
+          {"title": "GitHub Blog", "url": "https://github.blog"},
+          {"title": "Netflix TechBlog", "url": "https://netflixtechblog.com"},
+          {"title": "Uber Engineering", "url": "https://eng.uber.com"},
+          {
+            "title": "Airbnb Engineering",
+            "url": "https://medium.com/airbnb-engineering"
+          },
+          {"title": "Dropbox Tech Blog", "url": "https://dropbox.tech"},
+          {
+            "title": "Facebook Engineering",
+            "url": "https://engineering.fb.com"
+          },
+          {
+            "title": "Twitter Engineering",
+            "url": "https://blog.twitter.com/engineering"
+          },
+          {
+            "title": "Pinterest Engineering",
+            "url": "https://medium.com/@Pinterest_Engineering"
+          },
+          {
+            "title": "Spotify Engineering",
+            "url": "https://engineering.atspotify.com"
+          },
+          {
+            "title": "LinkedIn Engineering",
+            "url": "https://engineering.linkedin.com/blog"
+          },
+          {"title": "Slack Engineering", "url": "https://slack.engineering"},
+          {"title": "Stripe Engineering", "url": "https://stripe.com/blog"},
+          {
+            "title": "Shopify Engineering",
+            "url": "https://shopify.engineering/"
+          },
+          {"title": "Google AI Blog", "url": "https://ai.googleblog.com"},
+          {
+            "title": "AWS Compute Blog",
+            "url": "https://aws.amazon.com/blogs/compute"
+          },
+          {
+            "title": "Azure Blog",
+            "url": "https://azure.microsoft.com/en-us/blog"
+          },
+          {
+            "title": "Khan Academy Engineering",
+            "url": "https://engineering.khanacademy.org"
+          },
+          {"title": "Mozilla Hacks", "url": "https://hacks.mozilla.org"},
+          {"title": "Elastic Blog", "url": "https://www.elastic.co/blog"},
+          {
+            "title": "DigitalOcean Community",
+            "url": "https://www.digitalocean.com/community/tutorials"
+          },
+          {"title": "JetBrains Blog", "url": "https://blog.jetbrains.com"},
+          {"title": "Twilio Blog", "url": "https://www.twilio.com/blog"},
+          {"title": "Heroku Blog", "url": "https://blog.heroku.com"},
+          {
+            "title": "Red Hat Developer Blog",
+            "url": "https://developers.redhat.com/blog"
+          },
+          {"title": "HashiCorp Blog", "url": "https://www.hashicorp.com/blog"},
+          {"title": "Okta Developer Blog", "url": "https://developer.okta.com"},
+          {"title": "Cloudflare Blog", "url": "https://blog.cloudflare.com"},
+          {"title": "GitLab Blog", "url": "https://about.gitlab.com/blog"},
+          {
+            "title": "NVIDIA Developer Blog",
+            "url": "https://developer.nvidia.com/blog"
+          },
+          {
+            "title": "Salesforce Engineering",
+            "url": "https://engineering.salesforce.com"
+          },
+          {"title": "Docker Blog", "url": "https://www.docker.com/blog"},
+          {"title": "Hashnode Dev Blog", "url": "https://hashnode.com"},
+          {"title": "Scala Blog", "url": "https://www.scala-lang.org/blog"},
+          {"title": "Go Blog", "url": "https://blog.golang.org"},
+          {"title": "Rust Blog", "url": "https://blog.rust-lang.org"},
+          {
+            "title": "Python Software Foundation Blog",
+            "url": "https://pyfound.blogspot.com"
+          },
+          {"title": "Ruby Inside", "url": "https://www.rubyinside.com"},
+          {"title": "PHP Developer Blog", "url": "https://phpdeveloper.org"},
+          {"title": "Node.js Blog", "url": "https://nodejs.org/en/blog"},
+          {"title": "React Blog", "url": "https://reactjs.org/blog"},
+          {"title": "Vue.js Blog", "url": "https://blog.vuejs.org"},
+          {"title": "Angular Blog", "url": "https://blog.angular.io"},
+          {"title": "Svelte Blog", "url": "https://svelte.dev/blog"},
+          {
+            "title": "Django Blog",
+            "url": "https://www.djangoproject.com/weblog"
+          },
+          {
+            "title": "Flask Blog",
+            "url": "https://flask.palletsprojects.com/en/latest/blog"
+          },
+          {"title": "TensorFlow Blog", "url": "https://blog.tensorflow.org"},
+          {"title": "Kubernetes Blog", "url": "https://kubernetes.io/blog"},
+          {"title": "Ansible Blog", "url": "https://www.ansible.com/blog"},
+          {"title": "Terraform Blog", "url": "https://www.terraform.io/blog"},
+          {"title": "Jenkins Blog", "url": "https://www.jenkins.io/blog"},
+          {
+            "title": "Apache Kafka Blog",
+            "url": "https://kafka.apache.org/blog"
+          },
+          {
+            "title": "ElasticSearch Blog",
+            "url": "https://www.elastic.co/blog/category/elasticsearch"
+          },
+          {"title": "MongoDB Blog", "url": "https://www.mongodb.com/blog"},
+          {
+            "title": "PostgreSQL Blog",
+            "url": "https://www.postgresql.org/about/news"
+          },
+          {"title": "MySQL Blog", "url": "https://mysqlserverteam.com"},
+          {"title": "Redis Blog", "url": "https://redis.com/blog"},
+          {
+            "title": "Apache Spark Blog",
+            "url": "https://databricks.com/blog/category/apache-spark"
+          },
+          {"title": "Hacker News", "url": "https://news.ycombinator.com"},
+          {"title": "TechCrunch", "url": "https://techcrunch.com"},
+          {"title": "The Verge", "url": "https://www.theverge.com"},
+          {"title": "Wired", "url": "https://www.wired.com"},
+          {"title": "Ars Technica", "url": "https://arstechnica.com"},
+          {"title": "Engadget", "url": "https://www.engadget.com"},
+          {"title": "VentureBeat", "url": "https://venturebeat.com"},
+          {"title": "ZDNet", "url": "https://www.zdnet.com"},
+          {"title": "InfoWorld", "url": "https://www.infoworld.com"},
+          {"title": "Slashdot", "url": "https://slashdot.org"},
+          {"title": "CodePen Blog", "url": "https://blog.codepen.io"},
+          {"title": "SitePoint PHP", "url": "https://www.sitepoint.com/php"},
+          {"title": "Codrops", "url": "https://tympanus.net/codrops"},
+          {
+            "title": "Tutorialspoint",
+            "url": "https://www.tutorialspoint.com/blog"
+          },
+          {
+            "title": "Scotch.io Tutorials",
+            "url": "https://scotch.io/tutorials"
+          },
+          {"title": "Envato Tuts+", "url": "https://tutsplus.com"},
+          {
+            "title": "CSS-Tricks Almanac",
+            "url": "https://css-tricks.com/almanac"
+          },
+          {
+            "title": "SitePoint JavaScript",
+            "url": "https://www.sitepoint.com/javascript"
+          },
+          {
+            "title": "Smashing Magazine CSS",
+            "url": "https://www.smashingmagazine.com/category/css"
+          },
+          {"title": "A List Apart", "url": "https://alistapart.com"},
+          {"title": "David Walsh Blog", "url": "https://davidwalsh.name"},
+          {"title": "Paul Irish Blog", "url": "https://paulirish.com"},
+          {"title": "Addy Osmani Blog", "url": "https://addyosmani.com/blog"},
+          {"title": "Jake Archibald Blog", "url": "https://jakearchibald.com"},
+          {"title": "Codementor Blog", "url": "https://www.codementor.io/blog"},
+          {"title": "Dev.to Community", "url": "https://dev.to/t"},
+          {"title": "Hashnode Community", "url": "https://hashnode.com"},
+          {
+            "title": "Medium Programming",
+            "url": "https://medium.com/topic/programming"
+          }
         ];
-      
+
+      case 'documention':
+        return [
+          {
+    "title": "Swift",
+    "url": "https://swift.org/documentation/",
+    "iconName": "swift"
+  },
+  {
+    "title": "Kotlin",
+    "url": "https://kotlinlang.org/docs/home.html",
+    "iconName": "k.circle"
+  },
+  {
+    "title": "Python",
+    "url": "https://docs.python.org/3/",
+    "iconName": "p.circle"
+  },
+  {
+    "title": "Java",
+    "url": "https://docs.oracle.com/en/java/",
+    "iconName": "j.circle"
+  },
+  {
+    "title": "JavaScript",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+    "iconName": "safari"
+  },
+  {
+    "title": "C++",
+    "url": "https://en.cppreference.com/w/",
+    "iconName": "c.circle"
+  },
+  {
+    "title": "C#",
+    "url": "https://learn.microsoft.com/en-us/dotnet/csharp/",
+    "iconName": "number.circle"
+  },
+  {
+    "title": "Go",
+    "url": "https://pkg.go.dev/std",
+    "iconName": "g.circle"
+  },
+  {
+    "title": "Rust",
+    "url": "https://doc.rust-lang.org/book/",
+    "iconName": "r.circle"
+  },
+  {
+    "title": "Ruby",
+    "url": "https://www.ruby-lang.org/en/documentation/",
+    "iconName": "r.square"
+  },
+  {
+    "title": "PHP",
+    "url": "https://www.php.net/docs.php",
+    "iconName": "p.square"
+  },
+  {
+    "title": "HTML",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
+    "iconName": "curlybraces"
+  },
+  {
+    "title": "CSS",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/CSS",
+    "iconName": "paintbrush"
+  },
+  {
+    "title": "TypeScript",
+    "url": "https://www.typescriptlang.org/docs/",
+    "iconName": "doc.richtext"
+  },
+  {
+    "title": "SQL",
+    "url": "https://www.w3schools.com/sql/",
+    "iconName": "tablecells"
+  },
+  {
+    "title": "Dart",
+    "url": "https://dart.dev/guides",
+    "iconName": "d.circle"
+  },
+  {
+    "title": "Scala",
+    "url": "https://docs.scala-lang.org/",
+    "iconName": "s.circle"
+  },
+  {
+    "title": "Perl",
+    "url": "https://perldoc.perl.org/",
+    "iconName": "doc.text"
+  },
+  {
+    "title": "R",
+    "url": "https://cran.r-project.org/manuals.html",
+    "iconName": "r.circle.fill"
+  },
+  {
+    "title": "Elixir",
+    "url": "https://elixir-lang.org/learning.html",
+    "iconName": "e.circle"
+  },
+  {
+    "title": "Haskell",
+    "url": "https://www.haskell.org/documentation/",
+    "iconName": "h.circle"
+  },
+  {
+    "title": "Lua",
+    "url": "https://www.lua.org/manual/5.4/",
+    "iconName": "l.circle"
+  },
+  {
+    "title": "Clojure",
+    "url": "https://clojure.org/guides/learn",
+    "iconName": "c.circle.fill"
+  },
+  {
+    "title": "F#",
+    "url": "https://learn.microsoft.com/en-us/dotnet/fsharp/",
+    "iconName": "f.circle"
+  },
+  {
+    "title": "Assembly",
+    "url": "https://cs.lmu.edu/~ray/notes/asm/",
+    "iconName": "a.circle"
+  },
+  {
+    "title": "COBOL",
+    "url": "https://www.ibm.com/docs/en/cobol-zos/6.3",
+    "iconName": "c.square"
+  },
+  {
+    "title": "Objective-C",
+    "url": "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html",
+    "iconName": "o.circle"
+  },
+  {
+    "title": "Shell",
+    "url": "https://www.gnu.org/software/bash/manual/",
+    "iconName": "terminal"
+  },
+  {
+    "title": "MATLAB",
+    "url": "https://www.mathworks.com/help/matlab/",
+    "iconName": "m.circle"
+  }
+        ];
+
+      case 'documents':
+        return [
+          {
+            "title": "Swift",
+            "url": "https://swift.org/documentation/",
+            "iconName": "swift"
+          },
+          {
+            "title": "Kotlin",
+            "url": "https://kotlinlang.org/docs/home.html",
+            "iconName": "k.circle"
+          },
+          {
+            "title": "Python",
+            "url": "https://docs.python.org/3/",
+            "iconName": "p.circle"
+          },
+          {
+            "title": "Java",
+            "url": "https://docs.oracle.com/en/java/",
+            "iconName": "j.circle"
+          },
+          {
+            "title": "JavaScript",
+            "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+            "iconName": "safari"
+          },
+          {
+            "title": "C++",
+            "url": "https://en.cppreference.com/w/",
+            "iconName": "c.circle"
+          },
+          {
+            "title": "C#",
+            "url": "https://learn.microsoft.com/en-us/dotnet/csharp/",
+            "iconName": "number.circle"
+          },
+          {
+            "title": "Go",
+            "url": "https://pkg.go.dev/std",
+            "iconName": "g.circle"
+          },
+          {
+            "title": "Rust",
+            "url": "https://doc.rust-lang.org/book/",
+            "iconName": "r.circle"
+          },
+          {
+            "title": "Ruby",
+            "url": "https://www.ruby-lang.org/en/documentation/",
+            "iconName": "r.square"
+          },
+          {
+            "title": "PHP",
+            "url": "https://www.php.net/docs.php",
+            "iconName": "p.square"
+          },
+          {
+            "title": "HTML",
+            "url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
+            "iconName": "curlybraces"
+          },
+          {
+            "title": "CSS",
+            "url": "https://developer.mozilla.org/en-US/docs/Web/CSS",
+            "iconName": "paintbrush"
+          },
+          {
+            "title": "TypeScript",
+            "url": "https://www.typescriptlang.org/docs/",
+            "iconName": "doc.richtext"
+          },
+          {
+            "title": "SQL",
+            "url": "https://www.w3schools.com/sql/",
+            "iconName": "tablecells"
+          },
+          {
+            "title": "Dart",
+            "url": "https://dart.dev/guides",
+            "iconName": "d.circle"
+          },
+          {
+            "title": "Scala",
+            "url": "https://docs.scala-lang.org/",
+            "iconName": "s.circle"
+          },
+          {
+            "title": "Perl",
+            "url": "https://perldoc.perl.org/",
+            "iconName": "doc.text"
+          },
+          {
+            "title": "R",
+            "url": "https://cran.r-project.org/manuals.html",
+            "iconName": "r.circle.fill"
+          },
+          {
+            "title": "Elixir",
+            "url": "https://elixir-lang.org/learning.html",
+            "iconName": "e.circle"
+          },
+          {
+            "title": "Haskell",
+            "url": "https://www.haskell.org/documentation/",
+            "iconName": "h.circle"
+          },
+          {
+            "title": "Lua",
+            "url": "https://www.lua.org/manual/5.4/",
+            "iconName": "l.circle"
+          },
+          {
+            "title": "Clojure",
+            "url": "https://clojure.org/guides/learn",
+            "iconName": "c.circle.fill"
+          },
+          {
+            "title": "F#",
+            "url": "https://learn.microsoft.com/en-us/dotnet/fsharp/",
+            "iconName": "f.circle"
+          },
+          {
+            "title": "COBOL",
+            "url": "https://www.ibm.com/docs/en/cobol-zos/6.3",
+            "iconName": "c.square"
+          },
+          {
+            "title": "Objective-C",
+            "url":
+                "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html",
+            "iconName": "o.circle"
+          },
+          {
+            "title": "Shell",
+            "url": "https://www.gnu.org/software/bash/manual/",
+            "iconName": "terminal"
+          },
+          {
+            "title": "MATLAB",
+            "url": "https://www.mathworks.com/help/matlab/",
+            "iconName": "m.circle"
+          }
+        ];
+
       default:
         return [];
     }
