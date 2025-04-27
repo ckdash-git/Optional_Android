@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:optional/about_app.dart';
+import 'package:optional/change_password_screen.dart';
 import 'package:optional/login_page.dart';
 import 'package:optional/report_bug.dart';
 import 'package:optional/terms_condition.dart';
@@ -221,90 +223,137 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // Logout function
-  void _logout() {
-    // Get the current theme brightness
-    final brightness = MediaQuery.of(context).platformBrightness;
-    final isDarkMode =
-        ThemeController.themeModeNotifier.value == ThemeMode.dark ||
-            (ThemeController.themeModeNotifier.value == ThemeMode.system &&
-                brightness == Brightness.dark);
+void _logout() {
+  // Get the current theme brightness
+  final brightness = MediaQuery.of(context).platformBrightness;
+  final isDarkMode =
+      ThemeController.themeModeNotifier.value == ThemeMode.dark ||
+          (ThemeController.themeModeNotifier.value == ThemeMode.system &&
+              brightness == Brightness.dark);
 
-    // Show iOS-style confirmation dialog
+  // Show iOS-style confirmation dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        title: Text(
+          "Logout",
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          "Are you sure you want to logout?",
+          style: TextStyle(
+            fontSize: 13,
+            color: isDarkMode ? Colors.white70 : Colors.black87,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          // Cancel button (bottom)
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(0),
+              ),
+            ),
+            child: Text(
+              "Cancel",
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: isDarkMode ? Colors.blue : Colors.blue,
+              ),
+            ),
+          ),
+          // Logout button (top)
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Dismiss the logout dialog
+              _performLogout(context); // Proceed with updated logout method
+            },
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(0),
+              ),
+            ),
+            child: Text(
+              "Logout",
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: Colors.red,
+              ),
+            ),
+          ),
+        ],
+        actionsPadding: EdgeInsets.zero,
+        contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+      );
+    },
+  );
+}
+
+// New method for handling the logout process
+Future<void> _performLogout(BuildContext context) async {
+  try {
+    // Show loading indicator
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          title: Text(
-            "Logout",
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              color: isDarkMode ? Colors.white : Colors.black,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          content: Text(
-            "Are you sure you want to logout?",
-            style: TextStyle(
-              fontSize: 13,
-              color: isDarkMode ? Colors.white70 : Colors.black87,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          actions: [
-            // Cancel button (bottom)
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(0),
-                ),
-              ),
-              child: Text(
-                "Cancel",
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: isDarkMode ? Colors.blue : Colors.blue,
-                ),
-              ),
-            ),
-            // Logout button (top)
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Dismiss the logout dialog
-                logoutUser(context); // Proceed with logout
-              },
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(0),
-                ),
-              ),
-              child: Text(
-                "Logout",
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.red,
-                ),
-              ),
-            ),
-          ],
-          actionsPadding: EdgeInsets.zero,
-          contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-          actionsAlignment: MainAxisAlignment.spaceEvenly,
-        );
-      },
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: CircularProgressIndicator(),
+      ),
     );
+    
+    // First sign out from Google
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    await googleSignIn.signOut();
+    
+    // Then sign out from Firebase
+    await FirebaseAuth.instance.signOut();
+    
+    // Close loading indicator
+    Navigator.of(context).pop();
+    
+    // Clear any stored user data if needed
+    if (context.mounted) {
+      Provider.of<UserProfileProvider>(context, listen: false).clearProfile();
+    }
+    
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginSignupScreen()),
+        (route) => false, // Remove all previous routes
+      );
+    }
+  } catch (e) {
+    // Close loading indicator if it's showing
+    if (context.mounted && Navigator.canPop(context)) {
+      Navigator.of(context).pop();
+    }
+    
+    // Show error message
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logout failed: ${e.toString()}')),
+      );
+    }
   }
-
+}
   Future<void> logoutUser(BuildContext context) async {
     try {
       await FirebaseAuth.instance.signOut();
@@ -448,7 +497,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           isDarkMode,
                           title: "SETTINGS",
                           children: [
-                            buildTile("Change Password", isDarkMode),
+                            buildSettingsTile("Change Password", isDarkMode),
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 vertical: 8.0,
@@ -475,7 +524,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 },
                               ),
                             ),
-                            buildTile("Privacy Settings", isDarkMode),
+                            // buildTile("Privacy Settings", isDarkMode),
                             buildTile("Language", isDarkMode),
                           ],
                         ),
@@ -617,6 +666,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
+                        Center(
+                          child: Text(
+                            'Version 1.0.0',
+                            style: TextStyle(
+                              color: isDarkMode
+                                  ? Colors.white70
+                                  : Colors.grey.shade600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
@@ -640,6 +701,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.05),
             blurRadius: 6,
             offset: const Offset(0, 3),
@@ -676,6 +738,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap,
+    );
+  }
+
+  Widget buildSettingsTile(String title, bool isDarkMode) {
+    return GestureDetector(
+      onTap: () {
+        if (title == "Change Password") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const ChangePasswordScreen()),
+          );
+        }
+        // Add more actions here if needed
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        decoration: BoxDecoration(
+          // color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: isDarkMode ? Colors.white70 : Colors.grey.shade700,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
