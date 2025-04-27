@@ -326,34 +326,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // Or sign up with
-                  Row(
-                    children: [
-                      const Expanded(child: Divider()),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Text(
-                          "or sign up with",
-                          style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      ),
-                      const Expanded(child: Divider()),
-                    ],
-                  ),
                   const SizedBox(height: 10),
-
-                  // Social Icons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _socialIcon('assets/google-logo.png'),
-                      _socialIcon('assets/apple.png'),
-                      _socialIcon('assets/facebook.jpg'),
-                    ],
-                  ),
                   const SizedBox(height: 10),
 
                   // Login Redirect
