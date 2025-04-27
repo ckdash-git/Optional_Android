@@ -26,6 +26,7 @@ dependencies:
   url_launcher: ^6.1.7  # For opening links in browser
   shared_preferences: ^2.5.3
   intl: ^0.20.2
+  firebase_messaging: ^14.7.10
   
 
 dev_dependencies:
