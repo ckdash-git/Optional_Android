@@ -393,7 +393,3 @@ class _ReportBugScreenState extends State<ReportBugScreen> {
     );
   }
 }
-
-// extension on User {
-//   get userId => null;
-// }
