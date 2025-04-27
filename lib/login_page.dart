@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:optional/helper/google_sign_in.dart';
@@ -72,6 +71,9 @@ void _validateEmail() async {
     setState(() {
       _isLoading = false;
     });
+
+    Navigator.pushReplacement(context,
+    MaterialPageRoute(builder: (context) => MainScreen()));
 
     // Rest of your login success logic remains the same
     // ...
