@@ -9,16 +9,25 @@ class UserProfile {
 }
 
 class UserProfileProvider extends ChangeNotifier {
-  final UserProfile _profile = UserProfile(
-    fullName: FirebaseAuth.instance.currentUser?.displayName ?? "Chandan",
-    email: FirebaseAuth.instance.currentUser?.email ?? "",
-  );
+  late  UserProfile _profile;
+
+  UserProfileProvider({FirebaseAuth? firebaseAuth}) {
+    final auth = firebaseAuth ?? FirebaseAuth.instance;
+    _profile = UserProfile(
+      fullName: auth.currentUser?.displayName ?? "Chandan",
+      email: auth.currentUser?.email ?? "",
+    );
+  }
 
   UserProfile get profile => _profile;
 
   void updateProfile({String? fullName, String? email}) {
     if (fullName != null) _profile.fullName = fullName;
     if (email != null) _profile.email = email;
+    notifyListeners();
+  }
+  void clearProfile() {
+  _profile = UserProfile(fullName: "", email: "");
     notifyListeners();
   }
 }
