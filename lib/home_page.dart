@@ -73,16 +73,16 @@ class HomePage extends StatelessWidget {
                     ),
                     _buildFeatureCard(
                       context,
-                      title: 'Document',
-                      subtitle: 'Run and test code within the App.',
+                      title: 'Documents',
+                      subtitle: 'Get all the Documentations.',
                       gradient: const LinearGradient(
                         colors: [Colors.purpleAccent, Colors.pinkAccent],
                       ),
                     ),
                     _buildFeatureCard(
                       context,
-                      title: 'Classes',
-                      subtitle: 'Watch Classes from Popular Creators.',
+                      title: 'Frameworks',
+                      subtitle: 'Find your all theFrameworks Here.',
                       gradient: const LinearGradient(
                         colors: [Colors.orangeAccent, Colors.deepOrangeAccent],
                       ),
@@ -90,23 +90,15 @@ class HomePage extends StatelessWidget {
                     _buildFeatureCard(
                       context,
                       title: 'Blogs',
-                      subtitle: 'Hands-on coding challenges.',
+                      subtitle: 'Read latest posts over all the popular sites.',
                       gradient: const LinearGradient(
                         colors: [Colors.greenAccent, Colors.teal],
                       ),
                     ),
                     _buildFeatureCard(
                       context,
-                      title: 'Community',
-                      subtitle: 'Connect with others.',
-                      gradient: const LinearGradient(
-                        colors: [Colors.blueAccent, Colors.indigo],
-                      ),
-                    ),
-                    _buildFeatureCard(
-                      context,
                       title: 'Referal',
-                      subtitle: 'Connect with others.',
+                      subtitle: 'Ask for referal to your dream company employees.',
                       gradient: const LinearGradient(
                         colors: [Colors.pinkAccent, Colors.indigo],
                       ),
@@ -196,7 +188,7 @@ class HomePage extends StatelessWidget {
                   child: Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
