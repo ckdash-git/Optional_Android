@@ -45,10 +45,17 @@ flutter:
 
   # Uncomment and add assets here when needed
   assets:
-  - assets/images/signup.jpg
   - assets/google-logo.png
-  - assets/apple.png
-  - assets/facebook.jpg
+  - assets/walkthrough_images/light/image1.png
+  - assets/walkthrough_images/dark/image1.png
+  - assets/walkthrough_images/light/image2.png
+  - assets/walkthrough_images/dark/image2.png
+  - assets/walkthrough_images/light/image3.png
+  - assets/walkthrough_images/dark/image3.png 
+  - assets/walkthrough_images/light/image4.png
+  - assets/walkthrough_images/dark/image4.png
+  - assets/walkthrough_images/light/image5.png
+  - assets/walkthrough_images/dark/image5.png
 
   fonts:
     # - family: Schyler

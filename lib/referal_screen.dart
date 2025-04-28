@@ -51,12 +51,12 @@ class _ReferalScreenState extends State<ReferalScreen> {
 
       final List<Map<String, dynamic>> fetchedEmployees = querySnapshot.docs
     .where((doc) {
-      final data = doc.data() as Map<String, dynamic>;
+      final data = doc.data();
       return data.containsKey("Company") &&
              data["Company"].toString().toLowerCase().contains(normalizedInput);
     })
     .map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
+      final data = doc.data();
       return {
         "Name": data["Name"] ?? "No Name",
         "Email": data["Email"] ?? "No Email",

@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:optional/walkthrough_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,15 +32,22 @@ void main() async {
     print("Foreground Message: ${message.notification?.title}");
   });
 
+  // Check if walkthrough has been shown before
+  final prefs = await SharedPreferences.getInstance();
+  final bool showWalkthrough = prefs.getBool('show_walkthrough') ?? true;
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => UserProfileProvider(),
-      child: const MyApp(),
+      child: MyApp(showWalkthrough: showWalkthrough),
     ),
   );
 }
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool showWalkthrough;
+  
+  const MyApp({super.key, this.showWalkthrough = true});
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +69,11 @@ class MyApp extends StatelessWidget {
             fontFamily: 'OpenSauce',
           ),
           themeMode: currentThemeMode,
-          home: const AuthGate(), // Replace LoginSignupScreen with AuthGate
+          home: showWalkthrough ? WalkthroughScreen(onComplete: () async {
+            // Save that walkthrough has been shown
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('show_walkthrough', false);
+          }) : const AuthGate(),
         );
       },
     );
