@@ -7,9 +7,11 @@ import 'package:optional/report_bug.dart';
 import 'package:optional/terms_condition.dart';
 import 'package:optional/theme_controller.dart';
 import 'package:optional/user_profile.dart';
+import 'package:optional/referal_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart'; // For date formatting
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -222,138 +224,264 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Logout function
-void _logout() {
-  // Get the current theme brightness
-  final brightness = MediaQuery.of(context).platformBrightness;
-  final isDarkMode =
-      ThemeController.themeModeNotifier.value == ThemeMode.dark ||
-          (ThemeController.themeModeNotifier.value == ThemeMode.system &&
-              brightness == Brightness.dark);
-
-  // Show iOS-style confirmation dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-        title: Text(
-          "Logout",
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        content: Text(
-          "Are you sure you want to logout?",
-          style: TextStyle(
-            fontSize: 13,
-            color: isDarkMode ? Colors.white70 : Colors.black87,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        actions: [
-          // Cancel button (bottom)
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(0),
-              ),
-            ),
-            child: Text(
-              "Cancel",
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: isDarkMode ? Colors.blue : Colors.blue,
-              ),
-            ),
-          ),
-          // Logout button (top)
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Dismiss the logout dialog
-              _performLogout(context); // Proceed with updated logout method
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(0),
-              ),
-            ),
-            child: Text(
-              "Logout",
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: Colors.red,
-              ),
-            ),
-          ),
-        ],
-        actionsPadding: EdgeInsets.zero,
-        contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-        actionsAlignment: MainAxisAlignment.spaceEvenly,
-      );
-    },
-  );
-}
-
-// New method for handling the logout process
-Future<void> _performLogout(BuildContext context) async {
-  try {
-    // Show loading indicator
+  // Shows a dialog with referral history
+  void _showReferralHistory() async {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(
-        child: CircularProgressIndicator(),
+      builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
+        future: _fetchUserReferrals(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return AlertDialog(
+              title: Text("Loading Referrals"),
+              content: SizedBox(
+                height: 100,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return AlertDialog(
+              title: Text("Error"),
+              content: Text("Failed to load referrals: ${snapshot.error}"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Close"),
+                ),
+              ],
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return AlertDialog(
+              title: Text("No Referrals"),
+              content: Text("You haven't sent any referrals yet."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (context) => const ReferalScreen())
+                    );
+                  },
+                  child: Text("Send a Referral"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Close"),
+                ),
+              ],
+            );
+          } else {
+            final referrals = snapshot.data!;
+            return AlertDialog(
+              title: Text("Your Referrals"),
+              content: Container(
+                width: double.maxFinite,
+                height: 300,
+                child: ListView.builder(
+                  itemCount: referrals.length,
+                  itemBuilder: (context, index) {
+                    final referral = referrals[index];
+                    final timestamp = referral['timestamp'] as Timestamp;
+                    final dateTime = timestamp.toDate();
+                    final formattedDate = DateFormat('MMM d, yyyy • h:mm a').format(dateTime);
+                    
+                    return Card(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      child: ListTile(
+                        title: Text(referral['toName'] ?? 'Unknown'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(referral['toCompany'] ?? 'Unknown Company'),
+                            Text(formattedDate, style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          ],
+                        ),
+                        trailing: Icon(Icons.email),
+                        isThreeLine: true,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (context) => const ReferalScreen())
+                    );
+                  },
+                  child: Text("Send New"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Close"),
+                ),
+              ],
+            );
+          }
+        },
       ),
     );
-    
-    // First sign out from Google
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-    await googleSignIn.signOut();
-    
-    // Then sign out from Firebase
-    await FirebaseAuth.instance.signOut();
-    
-    // Close loading indicator
-    Navigator.of(context).pop();
-    
-    // Clear any stored user data if needed
-    if (context.mounted) {
-      Provider.of<UserProfileProvider>(context, listen: false).clearProfile();
-    }
-    
-    if (context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginSignupScreen()),
-        (route) => false, // Remove all previous routes
-      );
-    }
-  } catch (e) {
-    // Close loading indicator if it's showing
-    if (context.mounted && Navigator.canPop(context)) {
-      Navigator.of(context).pop();
-    }
-    
-    // Show error message
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Logout failed: ${e.toString()}')),
-      );
+  }
+
+  // Fetch user referrals from Firestore
+  Future<List<Map<String, dynamic>>> _fetchUserReferrals() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User not logged in');
+      }
+
+      // Query the 'userReferrals' collection for this user's referrals
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('referralRequests')
+          .where('fromUID', isEqualTo: user.uid)
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      print('Error fetching referrals: $e');
+      throw e;
     }
   }
-}
+
+  // Logout function
+  void _logout() {
+    // Get the current theme brightness
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final isDarkMode =
+        ThemeController.themeModeNotifier.value == ThemeMode.dark ||
+            (ThemeController.themeModeNotifier.value == ThemeMode.system &&
+                brightness == Brightness.dark);
+
+    // Show iOS-style confirmation dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          title: Text(
+            "Logout",
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: Text(
+            "Are you sure you want to logout?",
+            style: TextStyle(
+              fontSize: 13,
+              color: isDarkMode ? Colors.white70 : Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            // Cancel button (bottom)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(0),
+                ),
+              ),
+              child: Text(
+                "Cancel",
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.blue : Colors.blue,
+                ),
+              ),
+            ),
+            // Logout button (top)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Dismiss the logout dialog
+                _performLogout(context); // Proceed with updated logout method
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(0),
+                ),
+              ),
+              child: Text(
+                "Logout",
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          ],
+          actionsPadding: EdgeInsets.zero,
+          contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+        );
+      },
+    );
+  }
+
+  // New method for handling the logout process
+  Future<void> _performLogout(BuildContext context) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+      
+      // First sign out from Google
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut();
+      
+      // Then sign out from Firebase
+      await FirebaseAuth.instance.signOut();
+      
+      // Close loading indicator
+      Navigator.of(context).pop();
+      
+      // Clear any stored user data if needed
+      if (context.mounted) {
+        Provider.of<UserProfileProvider>(context, listen: false).clearProfile();
+      }
+      
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginSignupScreen()),
+          (route) => false, // Remove all previous routes
+        );
+      }
+    } catch (e) {
+      // Close loading indicator if it's showing
+      if (context.mounted && Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
+      
+      // Show error message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logout failed: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
   Future<void> logoutUser(BuildContext context) async {
     try {
       await FirebaseAuth.instance.signOut();
@@ -585,6 +713,38 @@ Future<void> _performLogout(BuildContext context) async {
                           ],
                         ),
                         const SizedBox(height: 16),
+                        // New My Datas section
+                        sectionCard(
+                          isDarkMode,
+                          title: "MY DATAS",
+                          children: [
+                            ListTile(
+                              title: Text(
+                                "Referrals",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: isDarkMode
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                              ),
+                              leading: Icon(
+                                Icons.people_outline,
+                                color: isDarkMode ? Colors.white : Colors.blue,
+                              ),
+                              trailing: Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16,
+                                color: isDarkMode ? Colors.white : Colors.black,
+                              ),
+                              onTap: _showReferralHistory,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
                         sectionCard(
                           isDarkMode,
                           title: "ABOUT",
@@ -658,7 +818,7 @@ Future<void> _performLogout(BuildContext context) async {
                                   style: TextStyle(
                                     fontSize: 26,
                                     fontWeight: FontWeight.bold,
-                                    color: Color.fromARGB(255, 163, 26, 237),
+                                    color: Color(0xFFA31AED),
                                   ),
                                 ),
                               ],

@@ -324,7 +324,7 @@ void _signInWithGoogle() async {
                         TextSpan(
                           text: 'Optional',
                           style: TextStyle(
-                            fontSize: width * 0.17,
+                            fontSize: width * 0.15,
                             fontWeight: FontWeight.bold,
                             color: isDarkMode ? Colors.white : Colors.black,
                           ),

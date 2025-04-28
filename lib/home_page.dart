@@ -8,7 +8,6 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -19,12 +18,15 @@ class HomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // App Title
               Text(
                 'Unbox',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
+              
+              // Subtitle
               RichText(
                 text: TextSpan(
                   text: 'Based on ',
@@ -49,66 +51,64 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
               ),
+              
               const SizedBox(height: 20),
 
-              // Instead of Expanded, use a fixed-height container inside scroll view
-              SizedBox(
-                height:
-                    screenHeight * 0.7, // Adjust as per screen or content needs
-                child: GridView.count(
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Disable nested scrolling
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 1,
-                  children: [
-                    _buildFeatureCard(
-                      context,
-                      title: 'Compiler',
-                      subtitle: 'Run and test code within the App.',
-                      gradient: const LinearGradient(
-                        colors: [Colors.purpleAccent, Colors.pinkAccent],
-                      ),
+              // Feature Cards Grid
+              GridView.count(
+                shrinkWrap: true, // Important for nested scrolling
+                physics: const NeverScrollableScrollPhysics(), // Disables grid scrolling
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 1,
+                children: [
+                  _buildFeatureCard(
+                    context,
+                    title: 'Compiler',
+                    subtitle: 'Run and test code within the App.',
+                    gradient: const LinearGradient(
+                      colors: [Colors.purpleAccent, Colors.pinkAccent],
                     ),
-                    _buildFeatureCard(
-                      context,
-                      title: 'Documents',
-                      subtitle: 'Get all the Documentations.',
-                      gradient: const LinearGradient(
-                        colors: [Colors.purpleAccent, Colors.pinkAccent],
-                      ),
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    title: 'Documents',
+                    subtitle: 'Get all the Documentations.',
+                    gradient: const LinearGradient(
+                      colors: [Colors.purpleAccent, Colors.pinkAccent],
                     ),
-                    _buildFeatureCard(
-                      context,
-                      title: 'Frameworks',
-                      subtitle: 'Find your all theFrameworks Here.',
-                      gradient: const LinearGradient(
-                        colors: [Colors.orangeAccent, Colors.deepOrangeAccent],
-                      ),
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    title: 'Frameworks',
+                    subtitle: 'Find all the Frameworks Here.',
+                    gradient: const LinearGradient(
+                      colors: [Colors.orangeAccent, Colors.deepOrangeAccent],
                     ),
-                    _buildFeatureCard(
-                      context,
-                      title: 'Blogs',
-                      subtitle: 'Read latest posts over all the popular sites.',
-                      gradient: const LinearGradient(
-                        colors: [Colors.greenAccent, Colors.teal],
-                      ),
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    title: 'Blogs',
+                    subtitle: 'Read latest posts over all the popular sites.',
+                    gradient: const LinearGradient(
+                      colors: [Colors.greenAccent, Colors.teal],
                     ),
-                    _buildFeatureCard(
-                      context,
-                      title: 'Referal',
-                      subtitle: 'Ask for referal to your dream company employees.',
-                      gradient: const LinearGradient(
-                        colors: [Colors.pinkAccent, Colors.indigo],
-                      ),
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    title: 'Referal',
+                    subtitle: 'Ask for referal to your dream company employees.',
+                    gradient: const LinearGradient(
+                      colors: [Colors.pinkAccent, Colors.indigo],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
 
+              // Footer
               Center(
                 child: Column(
                   children: [
@@ -138,6 +138,7 @@ class HomePage extends StatelessWidget {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -160,8 +161,7 @@ class HomePage extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  const ReferalScreen(), // Navigate to ReferalScreen
+              builder: (context) => const ReferalScreen(),
             ),
           );
         } else {
