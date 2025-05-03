@@ -4,7 +4,7 @@ import 'package:optional/auth_gate.dart';
 class WalkthroughScreen extends StatefulWidget {
   final Function? onComplete;
   
-  const WalkthroughScreen({Key? key, this.onComplete}) : super(key: key);
+  const WalkthroughScreen({super.key, this.onComplete});
 
   @override
   _WalkthroughScreenState createState() => _WalkthroughScreenState();
@@ -174,10 +174,10 @@ class WalkthroughPage extends StatelessWidget {
   final bool isDarkMode;
 
   const WalkthroughPage({
-    Key? key, 
+    super.key, 
     required this.content, 
     required this.isDarkMode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

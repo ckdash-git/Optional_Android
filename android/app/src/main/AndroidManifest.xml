@@ -22,7 +22,7 @@
     </queries>
 
     <application
-        android:label="optional"
+        android:label="Optional"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

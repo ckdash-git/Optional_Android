@@ -26,7 +26,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.optional.labs"
+        applicationId = "com.optional.android.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = 1

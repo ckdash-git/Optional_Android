@@ -57,11 +57,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final fullName =
               userData['fullName'] ?? user.displayName ?? 'Name Not Available';
           final email = user.email ?? 'No email Available';
+          
+          // Get notification preference from Firebase - default to true if not set
+          final notificationsEnabled = userData['notificationsEnabled'] ?? true;
 
-          // Update controllers
+          // Update controllers and state
           setState(() {
             _nameController.text = fullName;
             _emailController.text = email;
+            _notificationsEnabled = notificationsEnabled;
           });
 
           // Also update the provider so the UI reflects the changes
@@ -81,6 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               .set({
             'fullName': fullName,
             'email': email,
+            'notificationsEnabled': true, // Default to true for new users
             // 'createdAt': Timestamp.now(),
           });
 
@@ -88,6 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           setState(() {
             _nameController.text = fullName;
             _emailController.text = email;
+            _notificationsEnabled = true;
           });
 
           Provider.of<UserProfileProvider>(context, listen: false)
@@ -102,6 +108,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // Show an error snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load profile: $e')),
+      );
+    }
+  }
+
+  // Function to update notification preference in Firebase
+  Future<void> _updateNotificationPreference(bool value) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User not logged in');
+      }
+
+      // Update the value in Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({'notificationsEnabled': value});
+
+      // Update UI state
+      setState(() {
+        _notificationsEnabled = value;
+      });
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            value ? 'Notifications enabled' : 'Notifications disabled'
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      print('Error updating notification preference: $e');
+      // Revert switch state in case of error
+      setState(() {
+        _notificationsEnabled = !value;
+      });
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update notification preference: $e')),
       );
     }
   }
@@ -275,7 +322,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final referrals = snapshot.data!;
             return AlertDialog(
               title: Text("Your Referrals"),
-              content: Container(
+              content: SizedBox(
                 width: double.maxFinite,
                 height: 300,
                 child: ListView.builder(
@@ -345,8 +392,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return querySnapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
       print('Error fetching referrals: $e');
-      throw e;
+      rethrow;
     }
+  }
+
+  // New function to show language alert
+  void _showLanguageAlert() {
+    // Get the current theme brightness
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final isDarkMode =
+        ThemeController.themeModeNotifier.value == ThemeMode.dark ||
+            (ThemeController.themeModeNotifier.value == ThemeMode.system &&
+                brightness == Brightness.dark);
+                
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          title: Text(
+            "Coming Soon",
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: Text(
+            "We are working hard on this to available soon.",
+            style: TextStyle(
+              fontSize: 13,
+              color: isDarkMode ? Colors.white70 : Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(0),
+                ),
+              ),
+              child: Text(
+                "OK",
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.blue : Colors.blue,
+                ),
+              ),
+            ),
+          ],
+          actionsPadding: EdgeInsets.zero,
+          contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+          actionsAlignment: MainAxisAlignment.center,
+        );
+      },
+    );
   }
 
   // Logout function
@@ -499,7 +608,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     // Use ValueListenableBuilder to listen to theme changes
@@ -653,7 +761,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                             // buildTile("Privacy Settings", isDarkMode),
-                            buildTile("Language", isDarkMode),
+                            // Modified this line to use the new function
+                            buildTile("Language", isDarkMode, onTap: _showLanguageAlert),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -886,7 +995,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-
   Widget buildTile(String title, bool isDarkMode, {VoidCallback? onTap}) {
     return ListTile(
       title: Text(
